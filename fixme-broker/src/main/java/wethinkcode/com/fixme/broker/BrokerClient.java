@@ -10,6 +10,8 @@ public class BrokerClient {
         try {
 //            ServerSocket brokerListener = new ServerSocket(4000);
             Socket broker = new Socket("localhost", 5000);
+            InputStreamReader inputStreamReader = new InputStreamReader(broker.getInputStream());
+            BufferedReader buff = new BufferedReader(inputStreamReader);
 
             PrintWriter printWriter = new PrintWriter(broker.getOutputStream());
             printWriter.print("Client connection");
@@ -18,8 +20,6 @@ public class BrokerClient {
 //            Socket routerResponse = brokerListener.accept();
             System.out.println("Awaiting connection");
 
-            InputStreamReader inputStreamReader = new InputStreamReader(broker.getInputStream());
-            BufferedReader buff = new BufferedReader(inputStreamReader);
             System.out.println("Router response " + buff.readLine());
 
         } catch (UnknownHostException e) {
