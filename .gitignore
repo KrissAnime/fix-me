@@ -1,3 +1,6 @@
+.idea
+.iml
+
 target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -7,6 +10,36 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
+
+fixme-broker/target/
+fixme-broker/pom.xml.tag
+fixme-broker/pom.xml.releaseBackup
+fixme-broker/pom.xml.versionsBackup
+fixme-broker/pom.xml.next
+fixme-broker/release.properties
+fixme-broker/dependency-reduced-pom.xml
+fixme-broker/buildNumber.properties
+fixme-broker/.mvn/timing.properties
+
+fixme-market/target/
+fixme-market/pom.xml.tag
+fixme-market/pom.xml.releaseBackup
+fixme-market/pom.xml.versionsBackup
+fixme-market/pom.xml.next
+fixme-market/release.properties
+fixme-market/dependency-reduced-pom.xml
+fixme-market/buildNumber.properties
+fixme-market/.mvn/timing.properties
+
+fixme-router/target/
+fixme-router/pom.xml.tag
+fixme-router/pom.xml.releaseBackup
+fixme-router/pom.xml.versionsBackup
+fixme-router/pom.xml.next
+fixme-router/release.properties
+fixme-router/dependency-reduced-pom.xml
+fixme-router/buildNumber.properties
+fixme-router/.mvn/timing.properties
 
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar
