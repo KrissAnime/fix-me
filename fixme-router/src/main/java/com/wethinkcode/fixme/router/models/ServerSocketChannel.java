@@ -1,4 +1,4 @@
-package wethinkcode.com.fixme.router.models;
+package com.wethinkcode.fixme.router.models;
 
 import lombok.Getter;
 import lombok.Setter;
