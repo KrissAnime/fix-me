@@ -1,4 +1,6 @@
-package wethinkcode.com.fixme.router;
+package com.wethinkcode.fixme.router;
+
+import com.wethinkcode.fixme.router.models.FIXMessage;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -11,6 +13,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public class Server {
 
@@ -21,6 +24,7 @@ public class Server {
         /*******TESTING WINDOW*********/
 
         try {
+
             System.out.println("Starting up Server...");
             Selector selector = Selector.open();
             ServerSocketChannel server = ServerSocketChannel.open().bind(new InetSocketAddress("localhost", 5000));
@@ -34,6 +38,7 @@ public class Server {
                 Set<SelectionKey> selectionKeys = selector.selectedKeys();
                 Iterator<SelectionKey> iterator = selectionKeys.iterator();
                 while (iterator.hasNext()) {
+                    buffer.clear();
                     SelectionKey key = iterator.next();
 
                     if (key.isAcceptable()) {
@@ -41,6 +46,10 @@ public class Server {
                     }
 
                     if (key.isReadable()) {
+                        readClientMessage(buffer, key);
+                    }
+
+                    if (key.isWritable()) {
                         answerClient(buffer, key);
                     }
 
@@ -59,25 +68,42 @@ public class Server {
 
     private static void registerClient(Selector selector, ServerSocketChannel server) throws IOException {
         SocketChannel client = server.accept();
+        System.out.println("Client Connected " + client.getRemoteAddress());
         client.configureBlocking(false);
         client.register(selector, SelectionKey.OP_READ);
+        Sleep(1);
     }
 
-    private static void answerClient(ByteBuffer buffer, SelectionKey key) throws IOException {
+    private static void readClientMessage(ByteBuffer buffer, SelectionKey key) throws IOException {
         SocketChannel client = (SocketChannel)key.channel();
+        System.out.println("Reading client Message");
         client.read(buffer);
         if (new String(buffer.array()).trim().equals("Exit")) {
             client.close();
             System.out.println("Disconnecting from the client");
         } else {
-            System.out.println("Client says " + new String(buffer.array()).trim());
+            FIXMessage fixMessage = new FIXMessage(new String(buffer.array()).trim());
+            System.out.println("Client says " + fixMessage.toString());
         }
-        buffer.flip();
-        buffer.clear();
+        Sleep(3);
+    }
 
+    private static void answerClient(ByteBuffer buffer, SelectionKey key) throws IOException {
+        SocketChannel client = (SocketChannel)key.channel();
+        buffer.clear();
+        System.out.println("Send client message");
         buffer = ByteBuffer.wrap("I am the server".getBytes());
         client.write(buffer);
         buffer.flip();
         buffer.clear();
+        Sleep(4);
+    }
+
+    private static void Sleep(long time) {
+        try {
+            TimeUnit.SECONDS.sleep(time);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
