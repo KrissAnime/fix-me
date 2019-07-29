@@ -23,43 +23,46 @@ public class Server {
         /*******TESTING WINDOW*********/
         /*******TESTING WINDOW*********/
 
-        try {
+        FIXMessage fixMessage = new FIXMessage();
+        System.out.println("toString return " + fixMessage.toString());
 
-            System.out.println("Starting up Server...");
-            Selector selector = Selector.open();
-            ServerSocketChannel server = ServerSocketChannel.open().bind(new InetSocketAddress("localhost", 5000));
-            ByteBuffer buffer = ByteBuffer.allocate(2048);
-            server.configureBlocking(false);
-            server.register(selector, SelectionKey.OP_ACCEPT);
-
-            System.out.println("Waiting for client connection");
-            while (true) {
-                selector.select();
-                Set<SelectionKey> selectionKeys = selector.selectedKeys();
-                Iterator<SelectionKey> iterator = selectionKeys.iterator();
-                while (iterator.hasNext()) {
-                    buffer.clear();
-                    SelectionKey key = iterator.next();
-
-                    if (key.isAcceptable()) {
-                        registerClient(selector, server);
-                    }
-
-                    if (key.isReadable()) {
-                        readClientMessage(buffer, key);
-                    }
-
-                    if (key.isWritable()) {
-                        answerClient(buffer, key);
-                    }
-
-                    iterator.remove();
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("The selector had in IOException");
-            e.printStackTrace();
-        }
+//        try {
+//
+//            System.out.println("Starting up Server...");
+//            Selector selector = Selector.open();
+//            ServerSocketChannel server = ServerSocketChannel.open().bind(new InetSocketAddress("localhost", 5000));
+//            ByteBuffer buffer = ByteBuffer.allocate(2048);
+//            server.configureBlocking(false);
+//            server.register(selector, SelectionKey.OP_ACCEPT);
+//
+//            System.out.println("Waiting for client connection");
+//            while (true) {
+//                selector.select();
+//                Set<SelectionKey> selectionKeys = selector.selectedKeys();
+//                Iterator<SelectionKey> iterator = selectionKeys.iterator();
+//                while (iterator.hasNext()) {
+//                    buffer.clear();
+//                    SelectionKey key = iterator.next();
+//
+//                    if (key.isAcceptable()) {
+//                        registerClient(selector, server);
+//                    }
+//
+//                    if (key.isReadable()) {
+//                        readClientMessage(buffer, key);
+//                    }
+//
+//                    if (key.isWritable()) {
+//                        answerClient(buffer, key);
+//                    }
+//
+//                    iterator.remove();
+//                }
+//            }
+//        } catch (IOException e) {
+//            System.out.println("The selector had in IOException");
+//            e.printStackTrace();
+//        }
 
         /*******TESTING WINDOW*********/
         /*******TESTING WINDOW*********/
@@ -74,19 +77,19 @@ public class Server {
         Sleep(1);
     }
 
-    private static void readClientMessage(ByteBuffer buffer, SelectionKey key) throws IOException {
-        SocketChannel client = (SocketChannel)key.channel();
-        System.out.println("Reading client Message");
-        client.read(buffer);
-        if (new String(buffer.array()).trim().equals("Exit")) {
-            client.close();
-            System.out.println("Disconnecting from the client");
-        } else {
-            FIXMessage fixMessage = new FIXMessage(new String(buffer.array()).trim());
-            System.out.println("Client says " + fixMessage.toString());
-        }
-        Sleep(3);
-    }
+//    private static void readClientMessage(ByteBuffer buffer, SelectionKey key) throws IOException {
+//        SocketChannel client = (SocketChannel)key.channel();
+//        System.out.println("Reading client Message");
+//        client.read(buffer);
+//        if (new String(buffer.array()).trim().equals("Exit")) {
+//            client.close();
+//            System.out.println("Disconnecting from the client");
+//        } else {
+//            FIXMessage fixMessage = new FIXMessage(new String(buffer.array()).trim());
+//            System.out.println("Client says " + fixMessage.toString());
+//        }
+//        Sleep(3);
+//    }
 
     private static void answerClient(ByteBuffer buffer, SelectionKey key) throws IOException {
         SocketChannel client = (SocketChannel)key.channel();

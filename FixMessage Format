@@ -1,41 +1,48 @@
-MsgType
-Tag     Value   Meaning
-35      D       New Order Single
-35      8       Execution Report
-35      3       Session Rejected
-
-Status
-Tag     Value   Meaning
-39      0       New Order Acknowledged
-39      8       Order Rejected
-39      1       Partial Execution
-39      2       Complete Execution
-
-Side
-Tag     Value   Meaning
-54      1       Buy
-54      2       Sell
-
-
-OrderQty
-Tag     Value   Meaning
-38      ?       Quantity of product being ordered
-
-Price
-Tag     Value   Meaning
-44      ?       Specify Price Limit
-
-OrderType
-Tag     Value   Meaning
-40      1       Market
-40      2       Limit
-
-Routing
-Tag     Value   Meaning
-50      ?       Sender ID
-49      ?       Company ID
-56      ?       Receiver ID
-
-Symbol
-Tag     Value   Meaning
-55      ?       Value is a symbol
+//MsgType
+//        Tag     Value                             Meaning
+//        35      D                                 New Order Single
+//        35      8                                 Execution Report
+//        35      3                                 Session Rejected
+//
+//        Status
+//        Tag     Value                             Meaning
+//        39      0                                 New Order Acknowledged
+//        39      8                                 Order Rejected
+//        39      1                                 Partial Execution
+//        39      2                                 Complete Execution
+//
+//        Side
+//        Tag     Value                             Meaning
+//        54      1                                 Buy
+//        54      2                                 Sell
+//
+//        OrderQty
+//        Tag     Value                             Meaning
+//        38      '0' ... '1000000000'(int)         Quantity of product being ordered
+//
+//        Price
+//        Tag     Value                             Meaning
+//        44      '0' ... '99999999.9999'(float)    Price per share
+//
+//        OrderType
+//        Tag     Value                             Meaning
+//        40      1                                 Market
+//        40      2                                 Limit
+//
+//        Routing
+//        Tag     Value                             Meaning
+//        50      ?                                 Sender ID
+//        49      ?                                 Company ID
+//        56      ?                                 Receiver ID
+//
+//        Symbol
+//        Tag     Value                             Meaning
+//        55      ?                                 Value is a symbol
+//
+//        MsgSeqNum
+//        Tag     Value                             Meaning
+//        34      int                               Integer message sequence number
+//
+//        SendingTime
+//        Tag     Value                             Meaning
+//        52      ?                                 Time of message transmission (always expressed in GMT)
