@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.json.JSONObject;
 
 import javax.swing.*;
+import java.net.SocketAddress;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -85,15 +86,16 @@ public class FIXMessage {
     private @Getter String SendingTime;
     private @Getter String CheckSum;
 
-    private @Getter String marshallMessage = "8=FIX.4.2|9=65|35=A|49=SERVER|56=CLIENT|34=177|52=20090107-18:15:16|98=0|108=30|";
+    private @Getter String marshallMessage;
 
-    public FIXMessage(){
-        ParseMessage(marshallMessage);
-        System.out.println("Header " + ConstructHeader());
-        System.out.println("Body " + ConstructBody());
-        System.out.println("Trailer " + ConstructTrailer());
+    public FIXMessage(String marshallMessage){
+        this.marshallMessage = marshallMessage;
+//        ParseMessage(marshallMessage);
+//        System.out.println("Header " + ConstructHeader());
+//        System.out.println("Body " + ConstructBody());
+//        System.out.println("Trailer " + ConstructTrailer());
 
-        System.out.println("Final constructed message " + MarshallMessage());
+//        System.out.println("Final constructed message " + MarshallMessage());
     }
 
     //Example fix message which would request authentication from the server
@@ -106,8 +108,8 @@ public class FIXMessage {
         return (ConstructHeader() + ConstructBody() + ConstructTrailer());
     }
 
-    public void ParseMessage(String line) {
-        String[] splitLine = line.split("\\|");
+    private void ParseMessage() {
+        String[] splitLine = marshallMessage.split("\\|");
         for (String keyValue: splitLine) {
             String[] splitTags = keyValue.split("=");
             switch (splitTags[0]) {
