@@ -1,6 +1,6 @@
-package com.wethinkcode.fixme.broker;
+package com.wethinkcode.fixme.market;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -8,12 +8,15 @@ import java.nio.channels.SocketChannel;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-public class BrokerClient {
+public class MarketClient {
     private static SocketChannel client;
     private static ByteBuffer buffer = ByteBuffer.allocate(2048);
-    private static BrokerClient broker = new BrokerClient();
+    private static MarketClient marketClient = new MarketClient();
     static final String[] randomResponses = {
-            "This is broker"};
+            "This is market 1",
+            "This is market 2",
+            "This is market 3"};
+
     public static void main(String args[]) {
         try {
 //            senderID = lineSplit[0].split("=")[1];
@@ -30,8 +33,8 @@ public class BrokerClient {
 //                checkSum = lineSplit[4].split("=")[1];
 //            }
 //            String FixMessage = "49=601203|35=6|56=47569|MARKET=FOREX|SIDE=1|INSTRUMENT=EU/USD|PRICE=11.75|QUANTITY=0.8|10=123123";
-//            String FixMessage2 = "8=FIX.4.4|9=126|35=A|49=theBroker.12345|56=CSERVER|34=1|52=20170117- 08:03:04|57=TRADE|50=any_string|98=0|108=30|141=Y|553=12345|554=passw0rd!|10=131|";
-            client = SocketChannel.open(new InetSocketAddress("localhost",5000));
+//            String FixMessage2 = "8=FIX.4.4|9=126|35=A|49=theMarket.12345|56=CSERVER|34=1|52=20170117- 08:03:04|57=TRADE|50=any_string|98=0|108=30|141=Y|553=12345|554=passw0rd!|10=131|";
+            client = SocketChannel.open(new InetSocketAddress("localhost",5001));
 
             while (true) {
                 // Sending the message to the server;
@@ -53,10 +56,10 @@ public class BrokerClient {
             }
 
         } catch (UnknownHostException e) {
-            System.out.println("Broker attempting to connect to unknown host");
+            System.out.println("Market attempting to connect to unknown host");
             e.printStackTrace();
         } catch (IOException e) {
-            System.out.println("Broker exception during socket creation");
+            System.out.println("Market exception during socket creation");
             e.printStackTrace();
         }
     }
