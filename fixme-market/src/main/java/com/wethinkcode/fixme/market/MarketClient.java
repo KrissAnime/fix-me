@@ -1,12 +1,17 @@
 package com.wethinkcode.fixme.market;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.CompletionHandler;
 import java.nio.channels.SocketChannel;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class MarketClient {
     private static SocketChannel client;
@@ -17,52 +22,47 @@ public class MarketClient {
             "This is market 2",
             "This is market 3"};
 
-    public static void main(String args[]) {
-        try {
-//            senderID = lineSplit[0].split("=")[1];
-//            message = lineSplit[1].split("=")[1];
-//            targetID = lineSplit[2].split("=")[1];
-//            market = lineSplit[3].split("=")[1];
-//            if (message.equals("6")) {
-//                order = lineSplit[4].split("=")[1];
-//                instrument = lineSplit[5].split("=")[1];
-//                price = Double.parseDouble(lineSplit[6].split("=")[1]);
-//                quantity = Double.parseDouble(lineSplit[7].split("=")[1]);
-//                checkSum = lineSplit[8].split("=")[1];
-//            } else {
-//                checkSum = lineSplit[4].split("=")[1];
-//            }
-//            String FixMessage = "49=601203|35=6|56=47569|MARKET=FOREX|SIDE=1|INSTRUMENT=EU/USD|PRICE=11.75|QUANTITY=0.8|10=123123";
-//            String FixMessage2 = "8=FIX.4.4|9=126|35=A|49=theMarket.12345|56=CSERVER|34=1|52=20170117- 08:03:04|57=TRADE|50=any_string|98=0|108=30|141=Y|553=12345|554=passw0rd!|10=131|";
-            client = SocketChannel.open(new InetSocketAddress("localhost",5001));
+    public static void main(String args[]) throws InterruptedException, ExecutionException, TimeoutException {
+        while (true) {
+            try {
+                AsynchronousSocketChannel client = AsynchronousSocketChannel.open();
 
-            while (true) {
-                // Sending the message to the server;
-                buffer = ClearBuffer(buffer);
-                buffer = ByteBuffer.wrap(randomResponses[ThreadLocalRandom.current().nextInt(0, randomResponses.length)].getBytes());
-//                System.out.println("Message being written " + new String(buffer.array()).trim());
-                client.write(buffer);
-//                buffer.clear();
-                buffer.flip();
-//                Sleep(2);
-                    //Reading the response from the server
-                    buffer = ClearBuffer(buffer);
-                    client.read(buffer);
-                    System.out.println("Server response " + new String(buffer.array()).trim());
-                    buffer = ClearBuffer(buffer);
-                    buffer.flip();
-//                    buffer = ClearBuffer(buffer);
+                client.connect(new InetSocketAddress(5001)).get(5, TimeUnit.SECONDS);
+
+                client.write(ByteBuffer.wrap("This is the market".getBytes()));
                 Sleep(2);
-            }
+                client.read(buffer, buffer, new CompletionHandler<Integer, ByteBuffer>() {
+                    @Override
+                    public void completed(Integer result, ByteBuffer attachment) {
+                        System.out.println("Server said " + new String(buffer.array()).trim());
+                        buffer.flip();
+                        buffer = ClearBuffer(buffer);
+                        client.read(buffer, buffer, this);
+                    }
 
-        } catch (UnknownHostException e) {
-            System.out.println("Market attempting to connect to unknown host");
-            e.printStackTrace();
-        } catch (IOException e) {
-            System.out.println("Market exception during socket creation");
-            e.printStackTrace();
+                    @Override
+                    public void failed(Throwable exc, ByteBuffer attachment) {
+                        try {
+                            client.close();
+                            System.exit(1);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+            } catch (UnknownHostException e) {
+
+                System.out.println("Market attempting to connect to unknown host");
+                e.printStackTrace();
+            } catch (IOException e) {
+                System.out.println("Market exception during socket creation");
+                e.printStackTrace();
+            }
+            Sleep(10);
         }
     }
+
     private static ByteBuffer ClearBuffer(ByteBuffer buffer) {
 //        System.out.println("Before clear buffer" + new String(buffer.array()).trim());
         buffer.clear();
@@ -73,6 +73,7 @@ public class MarketClient {
 //        System.out.println("After clear buffer" + new String(buffer.array()).trim());
         return buffer;
     }
+
     private static void Sleep(long time) {
         try {
             TimeUnit.SECONDS.sleep(time);
