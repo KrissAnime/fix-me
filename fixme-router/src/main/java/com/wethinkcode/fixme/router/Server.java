@@ -1,6 +1,7 @@
 package com.wethinkcode.fixme.router;
 
 import com.wethinkcode.fixme.router.models.FIXMessage;
+import sun.jvm.hotspot.oops.Mark;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -40,18 +41,30 @@ public class Server {
 //        System.out.println("toString return " + fixMessage.toString());
 
         try {
-            int ports = 5001 | 5000;
+//            int ports = 5001 | 5000;
             AsynchronousChannelGroup group = AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(3));
-            System.out.println("Starting server");
-            AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open(group).bind(new InetSocketAddress(ports));
+
+            BrokerServer brokerServer = new BrokerServer(group);
+            MarketServer marketServer = new MarketServer(group);
+
+            new Thread(brokerServer).start();
+            new Thread(marketServer).start();
+
+//            marketThread.run();
+//            brokerThread.run();
+//            Sleep(3);
+
+
+//            System.out.println("Starting server");
+//            AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open(group).bind(new InetSocketAddress(ports));
 //            server = AsynchronousServerSocketChannel.open(group).bind(new InetSocketAddress(5001));
             //            AsynchronousChannelGroup asynchronousChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(2, );
 //            server.bind(new InetSocketAddress(5001));
 //            while (true) {
 //                AsynchronousSocketChannel channel = server.accept().get();
 //            }
-            System.out.println(server.getLocalAddress());
-        } catch (IOException e) {
+//            System.out.println(server.getLocalAddress());
+        } catch (Exception e) {
             e.printStackTrace();
         }
 //        try {
@@ -169,3 +182,116 @@ public class Server {
         return buffer;
     }
 }
+
+class BrokerServer implements Runnable {
+    AsynchronousChannelGroup group;
+    ByteBuffer buffer = ByteBuffer.allocate(2048);
+
+    public BrokerServer(AsynchronousChannelGroup group) {
+        this.group = group;
+    }
+
+    @Override
+    public void run() {
+        try {
+            System.out.println("Broker Server is ready");
+            AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open().bind(new InetSocketAddress(5000));
+            buffer = ClearBuffer(buffer);
+
+            server.accept(null, new CompletionHandler<AsynchronousSocketChannel, Object>() {
+                @Override
+                public void completed(AsynchronousSocketChannel result, Object attachment) {
+                    result.read(buffer);
+                    buffer.flip();
+                    buffer = ClearBuffer(buffer);
+                    System.out.println("Broker Buffer " + new String(buffer.array()).trim());
+                    System.out.println("Broker attachment" + attachment);
+                    result.write(ByteBuffer.wrap("This is the server to broker".getBytes()));
+//                    System.out.println("String version " + attachment.toString());
+                    server.accept(null, this);
+//                    FIXMessage fixMessage = new FIXMessage(new String());
+                };
+
+                @Override
+                public void failed(Throwable exc, Object attachment) {
+                    System.out.println("There was an error");
+
+                }
+            });
+            group.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+        } catch (IOException e) {
+            System.out.println("Error starting broker server");
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            System.out.println("Broker server was interrupted");
+            e.printStackTrace();
+        }
+    }
+    private static ByteBuffer ClearBuffer(ByteBuffer buffer) {
+//        System.out.println("Before clear buffer" + new String(buffer.array()).trim());
+        buffer.clear();
+        buffer = ByteBuffer.allocate(2048);
+        buffer.clear();
+        buffer.put(new byte[2048]);
+        buffer.clear();
+//        System.out.println("After clear buffer" + new String(buffer.array()).trim());
+        return buffer;
+    }
+}
+
+class MarketServer implements Runnable {
+    AsynchronousChannelGroup group;
+    ByteBuffer buffer = ByteBuffer.allocate(2048);
+
+    public MarketServer(AsynchronousChannelGroup group) {
+        this.group = group;
+    }
+
+    @Override
+    public void run() {
+        try {
+            System.out.println("Market Server is ready");
+            AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open().bind(new InetSocketAddress(5001));
+            server.accept(null, new CompletionHandler<AsynchronousSocketChannel, Object>() {
+                @Override
+                public void completed(AsynchronousSocketChannel result, Object attachment) {
+                    result.read(buffer);
+                    System.out.println("Market Buffer " + new String(buffer.array()).trim());
+                    buffer.flip();
+                    buffer = ClearBuffer(buffer);
+                    System.out.println("Market attachment" + attachment);
+                    result.write(ByteBuffer.wrap("This is the server to market".getBytes()));
+
+//                    System.out.println("String version " + attachment.toString());
+                    server.accept(null, this);
+//                    FIXMessage fixMessage = new FIXMessage(new String());
+                };
+
+                @Override
+                public void failed(Throwable exc, Object attachment) {
+                    System.out.println("There was an error");
+
+                }
+            });
+            group.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+        } catch (IOException e) {
+            System.out.println("Error starting market server");
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            System.out.println("Market server was interrupted");
+            e.printStackTrace();
+        }
+    }
+    private static ByteBuffer ClearBuffer(ByteBuffer buffer) {
+//        System.out.println("Before clear buffer" + new String(buffer.array()).trim());
+        buffer.clear();
+        buffer = ByteBuffer.allocate(2048);
+        buffer.clear();
+        buffer.put(new byte[2048]);
+        buffer.clear();
+//        System.out.println("After clear buffer" + new String(buffer.array()).trim());
+        return buffer;
+    }
+}
+
+
