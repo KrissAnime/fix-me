@@ -10,9 +10,7 @@ import java.net.SocketAddress;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadLocalRandom;
@@ -39,13 +37,14 @@ public class Server {
 
 //        FIXMessage fixMessage = new FIXMessage();
 //        System.out.println("toString return " + fixMessage.toString());
+        List<SocketAddress> clientAddresses = new ArrayList<>();
 
         try {
 //            int ports = 5001 | 5000;
             AsynchronousChannelGroup group = AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(3));
 
-            BrokerServer brokerServer = new BrokerServer(group);
-            MarketServer marketServer = new MarketServer(group);
+            BrokerServer brokerServer = new BrokerServer(group, clientAddresses);
+            MarketServer marketServer = new MarketServer(group, clientAddresses);
 
             new Thread(brokerServer).start();
             new Thread(marketServer).start();
@@ -186,9 +185,11 @@ public class Server {
 class BrokerServer implements Runnable {
     AsynchronousChannelGroup group;
     ByteBuffer buffer = ByteBuffer.allocate(2048);
+    List<SocketAddress> clientAddresses;
 
-    public BrokerServer(AsynchronousChannelGroup group) {
+    public BrokerServer(AsynchronousChannelGroup group, List<SocketAddress> clientAddresses) {
         this.group = group;
+        this.clientAddresses = clientAddresses;
     }
 
     @Override
@@ -198,15 +199,34 @@ class BrokerServer implements Runnable {
             AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open().bind(new InetSocketAddress(5000));
             buffer = ClearBuffer(buffer);
 
+            //Accept message to be passed on
             server.accept(null, new CompletionHandler<AsynchronousSocketChannel, Object>() {
                 @Override
-                public void completed(AsynchronousSocketChannel result, Object attachment) {
-                    result.read(buffer);
-                    buffer.flip();
-                    buffer = ClearBuffer(buffer);
-                    System.out.println("Broker Buffer " + new String(buffer.array()).trim());
-                    System.out.println("Broker attachment" + attachment);
-                    result.write(ByteBuffer.wrap("This is the server to broker".getBytes()));
+                public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {
+                    synchronized (clientAddresses) {
+                        try {
+                            if (!clientAddresses.contains(clientSocket.getLocalAddress())) {
+                                clientAddresses.add(clientSocket.getLocalAddress());
+                                System.out.println("Adding client " + clientSocket.getRemoteAddress().toString());
+                                buffer.flip();
+                                clientSocket.write(ByteBuffer.wrap(clientSocket.getRemoteAddress().toString().getBytes()));
+                                buffer = ClearBuffer(buffer);
+                                buffer.flip();
+
+//                                buffer.flip();
+//                                clientSocket.write(ByteBuffer.wrap());
+                            } else {
+                                clientSocket.read(buffer);
+                                buffer.flip();
+                                buffer = ClearBuffer(buffer);
+                                System.out.println("Broker Buffer " + new String(buffer.array()).trim());
+                                System.out.println("Broker attachment" + attachment);
+                                clientSocket.write(ByteBuffer.wrap("This is the server to broker".getBytes()));
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
 //                    System.out.println("String version " + attachment.toString());
                     server.accept(null, this);
 //                    FIXMessage fixMessage = new FIXMessage(new String());
@@ -242,9 +262,11 @@ class BrokerServer implements Runnable {
 class MarketServer implements Runnable {
     AsynchronousChannelGroup group;
     ByteBuffer buffer = ByteBuffer.allocate(2048);
+    List<SocketAddress> clientAddresses;
 
-    public MarketServer(AsynchronousChannelGroup group) {
+    public MarketServer(AsynchronousChannelGroup group, List<SocketAddress> clientAddresses) {
         this.group = group;
+        this.clientAddresses = clientAddresses;
     }
 
     @Override
@@ -254,13 +276,23 @@ class MarketServer implements Runnable {
             AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open().bind(new InetSocketAddress(5001));
             server.accept(null, new CompletionHandler<AsynchronousSocketChannel, Object>() {
                 @Override
-                public void completed(AsynchronousSocketChannel result, Object attachment) {
-                    result.read(buffer);
+                public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {
+                    synchronized (clientAddresses) {
+                        try {
+                            if (!clientAddresses.contains(clientSocket.getLocalAddress())) {
+                                clientAddresses.add(clientSocket.getLocalAddress());
+                                System.out.println("Adding market client " + clientSocket.getLocalAddress());
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    clientSocket.read(buffer);
                     System.out.println("Market Buffer " + new String(buffer.array()).trim());
                     buffer.flip();
                     buffer = ClearBuffer(buffer);
                     System.out.println("Market attachment" + attachment);
-                    result.write(ByteBuffer.wrap("This is the server to market".getBytes()));
+                    clientSocket.write(ByteBuffer.wrap("This is the server to market".getBytes()));
 
 //                    System.out.println("String version " + attachment.toString());
                     server.accept(null, this);
