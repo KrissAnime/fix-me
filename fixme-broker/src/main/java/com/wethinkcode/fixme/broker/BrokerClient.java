@@ -19,6 +19,8 @@ public class BrokerClient {
     private static BrokerClient broker = new BrokerClient();
     static final String[] randomResponses = {
             "This is broker"};
+    static boolean connected = false;
+    static String myAddress;
     public static void main(String args[]) throws InterruptedException, ExecutionException, TimeoutException {
 //            senderID = lineSplit[0].split("=")[1];
 //            message = lineSplit[1].split("=")[1];
@@ -58,15 +60,30 @@ public class BrokerClient {
 
             while (true) {
                 try {
+
                     AsynchronousSocketChannel client = AsynchronousSocketChannel.open();
 
                     client.connect(new InetSocketAddress(5000)).get(5, TimeUnit.SECONDS);
+
+//                    if (!connected) {
+//                        client.write(ByteBuffer.wrap("Connection Request".getBytes()));
+//                        Sleep(7);
+//                        connected = true;
+//                    }
 
                     client.write(ByteBuffer.wrap("This is the broker".getBytes()));
                     Sleep(2);
                     client.read(buffer, buffer, new CompletionHandler<Integer, ByteBuffer>() {
                         @Override
                         public void completed(Integer result, ByteBuffer attachment) {
+                            if (!connected) {
+                                String[] address = new String(buffer.array()).trim().split(":");
+                                myAddress = address[address.length - 1];
+                                System.out.println("My address " + myAddress);
+                                connected = true;
+                                buffer = ClearBuffer(buffer);
+                                Sleep(10);
+                            }
                             System.out.println("Server said " + new String(buffer.array()).trim());
                             buffer.flip();
                             buffer = ClearBuffer(buffer);
