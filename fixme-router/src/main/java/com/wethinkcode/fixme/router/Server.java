@@ -1,6 +1,8 @@
 package com.wethinkcode.fixme.router;
 
 import com.wethinkcode.fixme.router.models.FIXMessage;
+import com.wethinkcode.fixme.router.models.MessageDispatcher;
+import com.wethinkcode.fixme.router.models.SQLite;
 import sun.jvm.hotspot.oops.Mark;
 
 import java.io.*;
@@ -10,6 +12,7 @@ import java.net.SocketAddress;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -37,17 +40,17 @@ public class Server {
 
 //        FIXMessage fixMessage = new FIXMessage();
 //        System.out.println("toString return " + fixMessage.toString());
-        List<SocketAddress> clientAddresses = new ArrayList<>();
+        MessageDispatcher messageDispatcher = new MessageDispatcher();
 
         try {
-//            int ports = 5001 | 5000;
+            SQLite database = new SQLite();
             AsynchronousChannelGroup group = AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(3));
 
-            BrokerServer brokerServer = new BrokerServer(group, clientAddresses);
-            MarketServer marketServer = new MarketServer(group, clientAddresses);
+            BrokerServer brokerServer = new BrokerServer(group, messageDispatcher, database);
+//            MarketServer marketServer = new MarketServer(group, messageDispatcher);
 
             new Thread(brokerServer).start();
-            new Thread(marketServer).start();
+//            new Thread(marketServer).start();
 
 //            marketThread.run();
 //            brokerThread.run();
@@ -185,48 +188,64 @@ public class Server {
 class BrokerServer implements Runnable {
     AsynchronousChannelGroup group;
     ByteBuffer buffer = ByteBuffer.allocate(2048);
-    List<SocketAddress> clientAddresses;
+    MessageDispatcher messageDispatcher;
+    SQLite database;
 
-    public BrokerServer(AsynchronousChannelGroup group, List<SocketAddress> clientAddresses) {
+    public BrokerServer(AsynchronousChannelGroup group, MessageDispatcher messageDispatcher, SQLite database) {
         this.group = group;
-        this.clientAddresses = clientAddresses;
+        this.messageDispatcher = messageDispatcher;
+        this.database = database;
     }
 
     @Override
     public void run() {
         try {
             System.out.println("Broker Server is ready");
-            AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open().bind(new InetSocketAddress(5000));
+            AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open().bind(new InetSocketAddress("localhost", 5000));
             buffer = ClearBuffer(buffer);
 
             //Accept message to be passed on
             server.accept(null, new CompletionHandler<AsynchronousSocketChannel, Object>() {
                 @Override
                 public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {
-                    synchronized (clientAddresses) {
+                    synchronized (messageDispatcher) {
                         try {
-                            if (!clientAddresses.contains(clientSocket.getLocalAddress())) {
-                                clientAddresses.add(clientSocket.getLocalAddress());
-                                System.out.println("Adding client " + clientSocket.getRemoteAddress().toString());
-                                buffer.flip();
-                                clientSocket.write(ByteBuffer.wrap(clientSocket.getRemoteAddress().toString().getBytes()));
-                                buffer = ClearBuffer(buffer);
-                                buffer.flip();
-
-//                                buffer.flip();
-//                                clientSocket.write(ByteBuffer.wrap());
+                            messageDispatcher.AddAddress(clientSocket);
+                            clientSocket.read(buffer);
+                            System.out.println(new String(buffer.array()).trim());
+                            FIXMessage fixMessage = new FIXMessage(new String(buffer.array()).trim());
+                            if (fixMessage.getMarshallMessage() == null) {
+                                System.out.println("Invalid message or bad format");
                             } else {
-                                clientSocket.read(buffer);
-                                buffer.flip();
-                                buffer = ClearBuffer(buffer);
-                                System.out.println("Broker Buffer " + new String(buffer.array()).trim());
-                                System.out.println("Broker attachment" + attachment);
-                                clientSocket.write(ByteBuffer.wrap("This is the server to broker".getBytes()));
+                                System.out.println("Message received " + fixMessage.toJSONString());
+                                synchronized (database) {
+                                    try {
+                                        database.SaveTransaction(fixMessage);
+                                    } catch (SQLException e) {
+                                        System.out.println("There was an error with the database");
+                                        e.printStackTrace();
+                                    }
+                                }
                             }
+
+//                                clientSocket.read(buffer);
+//                                buffer.flip();
+//                                buffer = ClearBuffer(buffer);
+//                                System.out.println("Broker Buffer " + new String(buffer.array()).trim());
+//                                System.out.println("Broker attachment" + attachment);
+//                                clientSocket.write(ByteBuffer.wrap("This is the server to broker".getBytes()));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
+                    if (new String(buffer.array()).trim().length() != 0) {
+                        System.out.println("Buffer has array " + new String(buffer.array()).trim().length() + " " + new String(buffer.array()).trim());
+//                        System.out.println("Buffer has array " + buffer.array().length);
+                        buffer = ClearBuffer(buffer);
+                    } else {
+                        System.out.println("Buffer is empty");
+                    }
+//                    buffer = ClearBuffer(buffer);
 //                    System.out.println("String version " + attachment.toString());
                     server.accept(null, this);
 //                    FIXMessage fixMessage = new FIXMessage(new String());
@@ -273,7 +292,7 @@ class MarketServer implements Runnable {
     public void run() {
         try {
             System.out.println("Market Server is ready");
-            AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open().bind(new InetSocketAddress(5001));
+            AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open().bind(new InetSocketAddress("localhost", 5001));
             server.accept(null, new CompletionHandler<AsynchronousSocketChannel, Object>() {
                 @Override
                 public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {

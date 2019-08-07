@@ -27,7 +27,7 @@ public class MarketClient {
             try {
                 AsynchronousSocketChannel client = AsynchronousSocketChannel.open();
 
-                client.connect(new InetSocketAddress(5001)).get(5, TimeUnit.SECONDS);
+                client.connect(new InetSocketAddress("localhost", 5001)).get(5, TimeUnit.SECONDS);
 
                 client.write(ByteBuffer.wrap("This is the market".getBytes()));
                 Sleep(2);
