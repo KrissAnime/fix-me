@@ -89,7 +89,21 @@ public class FIXMessage {
     private @Getter String marshallMessage;
 
     public FIXMessage(String marshallMessage){
-        this.marshallMessage = marshallMessage;
+        String valueToCheck = marshallMessage.split("\\|")[marshallMessage.split("\\|").length - 1];
+        if (valueToCheck.length() > 1) {
+            if (!valueToCheck.split("=")[1].equals(ConstructCheckSum(marshallMessage))) {
+                this.marshallMessage = null;
+            } else if (valueToCheck.split("=")[1].length() > 3) {
+                this.marshallMessage = null;
+            } else {
+                this.marshallMessage = marshallMessage;
+                ParseMessage();
+            }
+        } else {
+            this.marshallMessage = null;
+        }
+        System.out.println("Val to check " + valueToCheck);
+//        this.marshallMessage = marshallMessage;
 //        ParseMessage(marshallMessage);
 //        System.out.println("Header " + ConstructHeader());
 //        System.out.println("Body " + ConstructBody());
@@ -217,14 +231,24 @@ public class FIXMessage {
         // Perform the calculation for the checksum which is the sum of all the
         // ascii values in the message not including the checksum, all '|' equal
         // 1 according to the documentation of FIX messages, modulo 256
-        int sum = 0;
+        CheckSum = ConstructCheckSum(marshallMessage);
 
-        for (int i = 0; i < marshallMessage.length(); i++) {
-            if (marshallMessage.charAt(i) == '|') {
+        return CheckSumTag + "=" + CheckSum + "|";
+    }
+
+    private String ConstructCheckSum(String message) {
+        int sum = 0;
+        int length = message.length() - message.split("\\|")[message.split("\\|").length - 1].length() - 1;
+
+        System.out.println("Final length " + length);
+
+        for (int i = 0; i < length; i++) {
+            if (message.charAt(i) == '|') {
                 sum += 1;
             } else {
-                sum += (int)marshallMessage.charAt(i);
+                sum += (int) message.charAt(i);
             }
+//            System.out.println("Char " + message.charAt(i));
         }
 
         CheckSum = String.valueOf(sum % 256);
@@ -232,7 +256,7 @@ public class FIXMessage {
             CheckSum = "0" + CheckSum;
         }
 
-        return CheckSumTag + "=" + CheckSum + "|";
+        return CheckSum;
     }
 
     private int CalculateBodyLength() {
@@ -247,21 +271,25 @@ public class FIXMessage {
 
     @Override
     public String toString() {
+        return MarshallMessage();
+    }
+
+    public String toJSONString() {
         JSONObject Data = new JSONObject();
 
         Data.put(String.valueOf(MessageTypeTag), MessageType)
-            .put(String.valueOf(StatusTag), Status)
-            .put(String.valueOf(SideTag), Side)
-            .put(String.valueOf(OrderQuantityTag), OrderQuantity)
-            .put(String.valueOf(PriceTag), Price)
-            .put(String.valueOf(OrderTypeMarketTag), OrderTypeMarket)
-            .put(String.valueOf(RoutingReceiverIDTag), RoutingReceiverID)
-            .put(String.valueOf(RoutingCompanyIDTag), RoutingCompanyID)
-            .put(String.valueOf(RoutingSenderIDTag), RoutingSenderID)
-            .put(String.valueOf(SymbolTag), Symbol)
-            .put(String.valueOf(SendingTimeTag), SendingTime)
-            .put(String.valueOf(MessageSequenceNumberTag), MessageSequenceNumber)
-            .put(String.valueOf(CheckSumTag), CheckSum);
+                .put(String.valueOf(StatusTag), Status)
+                .put(String.valueOf(SideTag), Side)
+                .put(String.valueOf(OrderQuantityTag), OrderQuantity)
+                .put(String.valueOf(PriceTag), Price)
+                .put(String.valueOf(OrderTypeMarketTag), OrderTypeMarket)
+                .put(String.valueOf(RoutingReceiverIDTag), RoutingReceiverID)
+                .put(String.valueOf(RoutingCompanyIDTag), RoutingCompanyID)
+                .put(String.valueOf(RoutingSenderIDTag), RoutingSenderID)
+                .put(String.valueOf(SymbolTag), Symbol)
+                .put(String.valueOf(SendingTimeTag), SendingTime)
+                .put(String.valueOf(MessageSequenceNumberTag), MessageSequenceNumber)
+                .put(String.valueOf(CheckSumTag), CheckSum);
 
         return Data.toString(3);
     }
