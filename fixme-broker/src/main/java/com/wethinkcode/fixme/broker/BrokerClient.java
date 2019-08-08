@@ -8,10 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.SocketChannel;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 public class BrokerClient {
     private static SocketChannel client;
@@ -21,7 +18,11 @@ public class BrokerClient {
             "This is broker"};
     static boolean connected = false;
     static String myAddress;
-    public static void main(String args[]) throws InterruptedException, ExecutionException, TimeoutException {
+
+    public static void main(String args[]) throws Exception {
+//        new BrokerClient().Start();
+
+        /***TESTING AREA
 //            senderID = lineSplit[0].split("=")[1];
 //            message = lineSplit[1].split("=")[1];
 //            targetID = lineSplit[2].split("=")[1];
@@ -57,13 +58,17 @@ public class BrokerClient {
 ////                    buffer = ClearBuffer(buffer);
 //                Sleep(2);
 //            }
+         ****/
 
+
+//        /***CURRENT VERSION
             while (true) {
                 try {
 
                     AsynchronousSocketChannel client = AsynchronousSocketChannel.open();
 
-                    client.connect(new InetSocketAddress(5000)).get(5, TimeUnit.SECONDS);
+                    client.connect(new InetSocketAddress("localhost", 5000)).get(5, TimeUnit.SECONDS);
+                    System.out.println("Client connect " + client.getRemoteAddress());
 
 //                    if (!connected) {
 //                        client.write(ByteBuffer.wrap("Connection Request".getBytes()));
@@ -71,8 +76,8 @@ public class BrokerClient {
 //                        connected = true;
 //                    }
 
-                    client.write(ByteBuffer.wrap("This is the broker".getBytes()));
-                    Sleep(2);
+                    client.write(ByteBuffer.wrap("49=601203|35=6|56=47569|MARKET=FOREX|SIDE=1|INSTRUMENT=EU/USD|PRICE=11.75|QUANTITY=0.8|10=123123".getBytes()));
+                    Sleep(5);
                     client.read(buffer, buffer, new CompletionHandler<Integer, ByteBuffer>() {
                         @Override
                         public void completed(Integer result, ByteBuffer attachment) {
@@ -111,7 +116,41 @@ public class BrokerClient {
                 }
                 Sleep(10);
             }
+//         ****/
     }
+
+//    private void Start()
+//            throws IOException, InterruptedException, ExecutionException {
+//
+//        AsynchronousSocketChannel client = AsynchronousSocketChannel.open();
+//        InetSocketAddress hostAddress = new InetSocketAddress("localhost", 5000);
+//        Future future = client.connect(hostAddress);
+//        future.get(); // returns null
+//
+//        System.out.println("Client is started: " + client.isOpen());
+//        System.out.println("Sending messages to server: ");
+//
+//        String [] messages = new String [] {"49=601203|35=6|56=47569|MARKET=FOREX|SIDE=1|INSTRUMENT=EU/USD|PRICE=11.75|QUANTITY=0.8|10=123123",
+//                "8=FIX.4.4|9=126|35=A|49=theBroker.12345|56=CSERVER|34=1|52=20170117- 08:03:04|57=TRADE|50=any_string|98=0|108=30|141=Y|553=12345|554=passw0rd!|10=131|",
+//                "Bye."};
+//
+//        for (int i = 0; i < messages.length; i++) {
+//
+//            byte [] message = messages[i].getBytes();
+//            ByteBuffer buffer = ByteBuffer.wrap(message);
+//            Future result = client.write(buffer);
+//
+//            while (! result.isDone()) {
+//                System.out.println("... ");
+//            }
+//
+//            System.out.println(messages [i]);
+//            buffer.clear();
+//            Sleep(8);
+//        } // for
+//
+//        client.close();
+//    }
 
     private static ByteBuffer ClearBuffer(ByteBuffer buffer) {
 //        System.out.println("Before clear buffer" + new String(buffer.array()).trim());

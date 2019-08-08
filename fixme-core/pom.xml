@@ -11,5 +11,10 @@
 
     <artifactId>fixme-core</artifactId>
 
+    <dependencies>
+
+
+    </dependencies>
+
 
 </project>

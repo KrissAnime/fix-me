@@ -56,5 +56,6 @@ public class MessageDispatcher {
             Thread.sleep(200);
         }
         System.out.println("Message was successfully sent to the broker");
+
     }
 }
