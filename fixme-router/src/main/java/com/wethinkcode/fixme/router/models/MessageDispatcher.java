@@ -3,29 +3,59 @@ package com.wethinkcode.fixme.router.models;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 public class MessageDispatcher {
-    private Map<String, AsynchronousSocketChannel> addresses = new HashMap<>();
+    Map<String, AsynchronousSocketChannel> marketAddresses = new HashMap<>();
+    Map<String, AsynchronousSocketChannel> brokerAddresses = new HashMap<>();
 
-    public MessageDispatcher() {
-    }
+    public MessageDispatcher(){}
 
-    public void AddAddress(AsynchronousSocketChannel client) throws IOException {
-        if (!addresses.containsKey(client.getRemoteAddress().toString().split(":")[1])) {
-            addresses.put(client.getRemoteAddress().toString().split(":")[1], client);
+    public void AddMarketAddress(String address, AsynchronousSocketChannel market) {
+        if (!marketAddresses.containsValue(market)){
+            marketAddresses.put(address, market);
         }
     }
 
-    public void DispatchMessage(FIXMessage message) throws IOException {
-        if (addresses.containsKey(message.getRoutingReceiverID())) {
-            addresses.get(message.getRoutingReceiverID()).write(ByteBuffer.wrap(message.toString().getBytes()));
-        }
+    public void RemoveMarketAddress(String address) throws IOException {
+        marketAddresses.get(address).close();
+        marketAddresses.remove(address);
     }
 
-    public void RemoveAddress(AsynchronousSocketChannel client) throws IOException {
-        addresses.remove(client.getRemoteAddress().toString().split(":")[1]);
+    public void AddBrokerAddress(String address, AsynchronousSocketChannel market) { brokerAddresses.put(address, market); }
+
+    public void RemoveBrokerAddress(String address) throws IOException {
+        brokerAddresses.get(address).close();
+        brokerAddresses.remove(address);
+    }
+
+    public FIXMessage SendMessageToMarket(FIXMessage fixMessage) throws IOException, InterruptedException {
+        System.out.println("Sending message to market");
+        ByteBuffer buffer = ByteBuffer.allocate(2048);
+
+        AsynchronousSocketChannel destination = marketAddresses.get(fixMessage.getRoutingReceiverID());
+        destination.write(ByteBuffer.wrap(fixMessage.MarshallMessage().getBytes()));
+
+        Future<Integer> result = destination.read(buffer);
+        while (!result.isDone()) {
+            System.out.println("Waiting on response from market... " + destination.getRemoteAddress());
+            Thread.sleep(200);
+        }
+        System.out.println("Message received from the market...\t" + new String(buffer.array()).trim());
+        return new FIXMessage(new String(buffer.array()).trim());
+    }
+
+    public void SendMessageToBroker(FIXMessage fixMessage) throws InterruptedException {
+        AsynchronousSocketChannel destination = brokerAddresses.get(fixMessage.getRoutingReceiverID());
+        Future<Integer> future = destination.write(ByteBuffer.wrap(fixMessage.MarshallMessage().getBytes()));
+
+        while (!future.isDone()) {
+            System.out.println("Attempting to send message to the broker...");
+            Thread.sleep(200);
+        }
+        System.out.println("Message was successfully sent to the broker");
+
     }
 }
