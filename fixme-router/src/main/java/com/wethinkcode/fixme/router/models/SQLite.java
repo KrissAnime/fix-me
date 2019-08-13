@@ -8,9 +8,9 @@ public class SQLite {
         try {
 
 //            connect();
-            System.out.println("After ");
-            PrintDirectory("./");
+//            PrintDirectory("./");
             CreateTables();
+//            System.out.println("After ");
 //            CreateTables();
         } catch (Exception e) {
             System.out.println("An exception occurred");
@@ -34,10 +34,12 @@ public class SQLite {
     private void CreateTables() throws SQLException {
         Connection connection = connect();
 
+        System.out.println("Connection created");
+
         Statement statement = connection.createStatement();
 
         statement.executeUpdate("CREATE TABLE IF NOT EXISTS `TRANSACTIONS` (" +
-                "`time_stamp` DATETIME DEFAULT," +
+                "`time_stamp` DATETIME," +
                 "`fix_message` VARCHAR(256) NOT NULL )");
 
         statement.close();
@@ -45,11 +47,20 @@ public class SQLite {
     }
 
     private Connection connect() throws SQLException {
-        System.out.println("Before ");
-        PrintDirectory("./");
+//        System.out.println("Before ");
+//        PrintDirectory("./");
         String url = "jdbc:sqlite:fixme.db";
 //        Connection conn = null;
 //        conn = DriverManager.getConnection(url);
+//        String url = "jdbc:sqlite:fixme.db";
+//        Connection conn = null;
+//        try {
+//            conn = DriverManager.getConnection(url);
+//        } catch (SQLException e) {
+//            System.out.println(e.getMessage());
+//        }
+//        return conn;
+
         return DriverManager.getConnection(url);
     }
 

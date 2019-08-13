@@ -86,32 +86,23 @@ class BrokerServer implements Runnable {
                 public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {
                     synchronized (messageDispatcher) {
                         try {
-//                            if (!clientAddresses.contains(clientSocket.getLocalAddress())) {
-//                                clientAddresses.add(clientSocket.getLocalAddress());
-//                                System.out.println("Adding client " + clientSocket.getRemoteAddress().toString());
-//                                buffer.flip();
-//                                Future<Integer> future = clientSocket.write(ByteBuffer.wrap(clientSocket.getRemoteAddress().toString().getBytes()));
-//
-//                                while (!future.isDone()) {
-//                                    System.out.println("Waiting for message to be send to client...");
-//                                    Thread.sleep(100);
-//                                }
-//
-////                                buffer = ClearBuffer(buffer);
-////                                buffer.flip();
-//
-////                                buffer.flip();
-////                                clientSocket.write(ByteBuffer.wrap());
-//                            } else {
+                            messageDispatcher.AddAddress(clientSocket);
+                            clientSocket.read(buffer);
+                            System.out.println(new String(buffer.array()).trim());
+                            FIXMessage fixMessage = new FIXMessage(new String(buffer.array()).trim());
+                            if (fixMessage.getMarshallMessage() == null) {
+                                System.out.println("Invalid message or bad format");
+                            } else {
+                                System.out.println("Message received " + fixMessage.toJSONString());
+                                synchronized (database) {
+                                    try {
+                                        database.SaveTransaction(fixMessage);
+                                        System.out.println("Saved transaction");
+                                    } catch (SQLException e) {
+                                        System.out.println("There was an error with the database");
+                                        e.printStackTrace();
+                                    }
 
-                                Future<Integer> future = clientSocket.read(buffer);
-
-
-
-                                while (!future.isDone()) {
-                                    System.out.println("Waiting for broker message...");
-                                    Thread.sleep(250);
-                                }
                                 FIXMessage fixMessage = new FIXMessage(new String(buffer.array()).trim());
 
                                 messageDispatcher.AddBrokerAddress(fixMessage.getRoutingSenderID(), clientSocket);
