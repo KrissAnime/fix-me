@@ -221,6 +221,7 @@ class BrokerServer implements Runnable {
                                 synchronized (database) {
                                     try {
                                         database.SaveTransaction(fixMessage);
+                                        System.out.println("Saved transaction");
                                     } catch (SQLException e) {
                                         System.out.println("There was an error with the database");
                                         e.printStackTrace();
