@@ -2,7 +2,7 @@ package com.wethinkcode.fixme.router;
 
 import com.wethinkcode.fixme.router.models.FIXMessage;
 import com.wethinkcode.fixme.router.models.MessageDispatcher;
-
+import com.wethinkcode.fixme.router.models.SQLite;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class Server {
-    static int brokerID = 99999;
+//    static int brokerID = 99999;
 
     static final String[] randomResponses = {
             "This is the server",
@@ -37,10 +37,10 @@ public class Server {
             AsynchronousChannelGroup group = AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(3));
 
             BrokerServer brokerServer = new BrokerServer(group, messageDispatcher, database);
-//            MarketServer marketServer = new MarketServer(group, messageDispatcher);
+            MarketServer marketServer = new MarketServer(group, messageDispatcher, database);
 
             new Thread(brokerServer).start();
-//            new Thread(marketServer).start();
+            new Thread(marketServer).start();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -55,17 +55,19 @@ public class Server {
         TimeUnit.SECONDS.sleep(seconds);
     }
 
-    private static int setBrokerID() {
-        return ++brokerID;
-    }
+//    private static int setBrokerID() {
+//        return ++brokerID;
+//    }
 }
 
 class BrokerServer implements Runnable {
     AsynchronousChannelGroup group;
     ByteBuffer buffer = ByteBuffer.allocate(2048);
+    SQLite database;
+    static int brokerID = 99999;
 
-    List<SocketAddress> clientAddresses;
-    MessageDispatcher messageDispatcher = new MessageDispatcher();
+    List<AsynchronousSocketChannel> brokerAddresses;
+    MessageDispatcher messageDispatcher;
 
     public BrokerServer(AsynchronousChannelGroup group, MessageDispatcher messageDispatcher, SQLite database) {
         this.group = group;
@@ -84,68 +86,53 @@ class BrokerServer implements Runnable {
             server.accept(null, new CompletionHandler<AsynchronousSocketChannel, Object>() {
                 @Override
                 public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {
-                    synchronized (messageDispatcher) {
                         try {
-//                            if (!clientAddresses.contains(clientSocket.getLocalAddress())) {
-//                                clientAddresses.add(clientSocket.getLocalAddress());
-//                                System.out.println("Adding client " + clientSocket.getRemoteAddress().toString());
-//                                buffer.flip();
-//                                Future<Integer> future = clientSocket.write(ByteBuffer.wrap(clientSocket.getRemoteAddress().toString().getBytes()));
+
+                            Future<Integer> future = clientSocket.read(buffer);
+
+                            while (!future.isDone()) {
+                                System.out.println("Waiting for broker message...");
+                                Thread.sleep(250);
+                            }
+                            FIXMessage fixMessage = new FIXMessage(new String(buffer.array()).trim());
+
+//                            if (!brokerAddresses.contains(clientSocket)) {
+//                                brokerAddresses.add(clientSocket);
+//                                System.out.println("Broker client added " + clientSocket.getLocalAddress());
 //
-//                                while (!future.isDone()) {
-//                                    System.out.println("Waiting for message to be send to client...");
-//                                    Thread.sleep(100);
-//                                }
+////                                fixMessage.setRoutingSenderID();
+////                                messageDispatcher.SendMessageToBroker(f);
+//                            }
+
+
+                            System.out.println("Message received " + fixMessage.toJSONString());
+                            TimeUnit.SECONDS.sleep(5);
+//                                database.SaveTransaction(fixMessage);
 //
-////                                buffer = ClearBuffer(buffer);
-////                                buffer.flip();
-//
-////                                buffer.flip();
-////                                clientSocket.write(ByteBuffer.wrap());
-//                            } else {
+//                                messageDispatcher.AddBrokerAddress(fixMessage.getRoutingSenderID(), clientSocket);
 
-                                Future<Integer> future = clientSocket.read(buffer);
+//                                fixMessage = messageDispatcher.SendMessageToMarket(fixMessage);
+
+//                                messageDispatcher.SendMessageToBroker(fixMessage);
 
 
-
-                                while (!future.isDone()) {
-                                    System.out.println("Waiting for broker message...");
-                                    Thread.sleep(250);
-                                }
-                                FIXMessage fixMessage = new FIXMessage(new String(buffer.array()).trim());
-
-                                messageDispatcher.AddBrokerAddress(fixMessage.getRoutingSenderID(), clientSocket);
-
-                                fixMessage = messageDispatcher.SendMessageToMarket(fixMessage);
-
-                                messageDispatcher.SendMessageToBroker(fixMessage);
-//                                buffer.flip();
-//                                buffer = ClearBuffer(buffer);
-//                                System.out.println("Broker Buffer " + new String(buffer.array()).trim());
-//                                System.out.println("Broker attachment" + attachment);
-//                                future = clientSocket.write(ByteBuffer.wrap(fixMessage.MarshallMessage().getBytes()));
-
-
-
-                                while (!future.isDone()) {
-                                    System.out.println("Waiting for FIX message to be sent back to broker...");
-                                    Thread.sleep(200);
-                                }
+                            while (!future.isDone()) {
+                                System.out.println("Waiting for FIX message to be sent back to broker...");
+                                Thread.sleep(200);
+                            }
 
 //                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (InterruptedException e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
-                    }
-                    if (new String(buffer.array()).trim().length() != 0) {
-                        System.out.println("Buffer has array " + new String(buffer.array()).trim().length() + " " + new String(buffer.array()).trim());
-//                        System.out.println("Buffer has array " + buffer.array().length);
-                        buffer = ClearBuffer(buffer);
-                    } else {
-                        System.out.println("Buffer is empty");
-                    }
+//                        } catch (SQLException e) {
+//                            e.printStackTrace();
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+
 //                    buffer = ClearBuffer(buffer);
 //                    System.out.println("String version " + attachment.toString());
                     server.accept(null, this);
@@ -166,6 +153,7 @@ class BrokerServer implements Runnable {
             System.out.println("Broker server was interrupted");
             e.printStackTrace();
         }
+
     }
 
     private static ByteBuffer ClearBuffer(ByteBuffer buffer) {
@@ -178,16 +166,24 @@ class BrokerServer implements Runnable {
 //        System.out.println("After clear buffer" + new String(buffer.array()).trim());
         return buffer;
     }
+
+    private static int setBrokerID() {
+        return ++brokerID;
+    }
 }
+
+/*** OLD VERSION OF SERVER ***/
 
 class MarketServer implements Runnable {
     AsynchronousChannelGroup group;
     ByteBuffer buffer = ByteBuffer.allocate(2048);
-    List<SocketAddress> clientAddresses;
+    MessageDispatcher messageDispatcher;
+    SQLite database;
 
-    public MarketServer(AsynchronousChannelGroup group, List<SocketAddress> clientAddresses) {
+    public MarketServer(AsynchronousChannelGroup group, MessageDispatcher messageDispatcher, SQLite database) {
         this.group = group;
-        this.clientAddresses = clientAddresses;
+        this.messageDispatcher = messageDispatcher;
+        this.database = database;
     }
 
     @Override
@@ -198,16 +194,16 @@ class MarketServer implements Runnable {
             server.accept(null, new CompletionHandler<AsynchronousSocketChannel, Object>() {
                 @Override
                 public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {
-                    synchronized (clientAddresses) {
-                        try {
-                            if (!clientAddresses.contains(clientSocket.getLocalAddress())) {
-                                clientAddresses.add(clientSocket.getLocalAddress());
-                                System.out.println("Adding market client " + clientSocket.getLocalAddress());
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
+//                    synchronized (clientAddresses) {
+//                        try {
+//                            if (!clientAddresses.contains(clientSocket.getLocalAddress())) {
+//                                clientAddresses.add(clientSocket.getLocalAddress());
+//                                System.out.println("Adding market client " + clientSocket.getLocalAddress());
+//                            }
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
                     clientSocket.read(buffer);
                     System.out.println("Market Buffer " + new String(buffer.array()).trim());
                     buffer.flip();
@@ -235,6 +231,7 @@ class MarketServer implements Runnable {
             e.printStackTrace();
         }
     }
+
     private static ByteBuffer ClearBuffer(ByteBuffer buffer) {
 //        System.out.println("Before clear buffer" + new String(buffer.array()).trim());
         buffer.clear();

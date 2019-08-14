@@ -8,8 +8,8 @@ public class SQLite {
         try {
 
 //            connect();
-            System.out.println("After ");
-            PrintDirectory("./");
+//            System.out.println("After ");
+//            PrintDirectory("./");
             CreateTables();
 //            CreateTables();
         } catch (Exception e) {
@@ -20,7 +20,7 @@ public class SQLite {
 
     public void SaveTransaction(FIXMessage fixMessage) throws SQLException {
         Connection connection = connect();
-        String query = "INSERT INTO `TRANSACTIONS` (`fix_message`) VALUE ?";
+        String query = "INSERT INTO `TRANSACTIONS` (`fix_message`) VALUES (?)";
         PreparedStatement preparedStatement = connection.prepareStatement(query);
 
         preparedStatement.setString(1, fixMessage.toString());
@@ -37,7 +37,7 @@ public class SQLite {
         Statement statement = connection.createStatement();
 
         statement.executeUpdate("CREATE TABLE IF NOT EXISTS `TRANSACTIONS` (" +
-                "`time_stamp` DATETIME DEFAULT," +
+                "`time_stamp` DATETIME," +
                 "`fix_message` VARCHAR(256) NOT NULL )");
 
         statement.close();
@@ -45,12 +45,7 @@ public class SQLite {
     }
 
     private Connection connect() throws SQLException {
-        System.out.println("Before ");
-        PrintDirectory("./");
-        String url = "jdbc:sqlite:fixme.db";
-//        Connection conn = null;
-//        conn = DriverManager.getConnection(url);
-        return DriverManager.getConnection(url);
+        return DriverManager.getConnection("jdbc:sqlite:fixme.db");
     }
 
     private void PrintDirectory(String filepath) {
