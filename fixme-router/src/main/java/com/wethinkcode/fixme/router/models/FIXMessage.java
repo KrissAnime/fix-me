@@ -89,20 +89,16 @@ public class FIXMessage {
     private @Getter String marshallMessage;
 
     public FIXMessage(String marshallMessage){
-        String valueToCheck = marshallMessage.split("\\|")[marshallMessage.split("\\|").length - 1];
-        if (valueToCheck.length() > 1) {
-            if (!valueToCheck.split("=")[1].equals(ConstructCheckSum(marshallMessage))) {
-                this.marshallMessage = null;
-            } else if (valueToCheck.split("=")[1].length() > 3) {
-                this.marshallMessage = null;
-            } else {
-                this.marshallMessage = marshallMessage;
-                ParseMessage();
-            }
-        } else {
+        String valueToCheck = marshallMessage.split("\\|")[marshallMessage.split("\\|").length - 1].split("=")[1];
+
+        System.out.println("Val to check:\t" + valueToCheck + " checksum val:\t" + !valueToCheck.equals(ConstructCheckSum(marshallMessage)) + " val length:\t");
+
+        if (valueToCheck.length() != 3 && !valueToCheck.equals(ConstructCheckSum(marshallMessage))) {
             this.marshallMessage = null;
+        } else {
+            this.marshallMessage = marshallMessage;
+            ParseMessage();
         }
-        System.out.println("Val to check " + valueToCheck);
 //        this.marshallMessage = marshallMessage;
 //        ParseMessage(marshallMessage);
 //        System.out.println("Header " + ConstructHeader());
@@ -163,6 +159,11 @@ public class FIXMessage {
                 case "52":
                     SendingTime = splitTags[1];
                     break;
+                case "10":
+                    CheckSum = splitTags[1];
+                    break;
+                default:
+//                    System.out.println("Default found in fix message tag:\t" + splitTags[0] + " message:\t" + splitTags[1]);
             }
         }
     }
@@ -238,24 +239,46 @@ public class FIXMessage {
 
     private String ConstructCheckSum(String message) {
         int sum = 0;
-        int length = message.length() - message.split("\\|")[message.split("\\|").length - 1].length() - 1;
+        int length;
+//        String[] messageSplit = message.split("\\|");
 
-        System.out.println("Final length " + length);
+        switch (message.charAt(message.length() - 1)){
+            case '|':
+                length = message.length() - 7;
+                break;
+            default:
+                length = message.length() - 6;
+        }
+
+//        System.out.println("message length " + message.length());
+//        System.out.println("Message split " + (message.split("\\|")[message.split("\\|").length - 1].length() - 1));
+//        System.out.println("Final char " + message.charAt(length));
+        System.out.println(message);
+//        for (String splitMessage: messageSplit) {
+//            String[] key = splitMessage.split("=");
+//            if (!key[0].equals("8") && !key[0].equals("10") && !key[0].equals("9")) {
+//                sum += key[0].length() + key[1].length() + 2;
+//            }
+//        }
 
         for (int i = 0; i < length; i++) {
             if (message.charAt(i) == '|') {
                 sum += 1;
             } else {
-                sum += (int) message.charAt(i);
+                sum += message.charAt(i);
             }
 //            System.out.println("Char " + message.charAt(i));
         }
+        //8=FIX.4.2|9=65|35=A|49=SERVER|56=CLIENT|34=177|52=20090107-18:15:16|98=0|108=30|10=062|
+        //0   + 0  +     5  +   10    +   10    +  7   +        21          + 5  +  7   +   0  = 65
 
+        //8=FIX.4.4|9=106|35=A|34=1|49=CSERVER|50=TRADE|52=20170117- 08:03:04.509|56=theBroker.12345|57=any_string|98=0|108=30|141=Y|10=066|
+        //                  5   +5  +11         +9      +26                         +19                 +14         +5  +7      +6+5
         CheckSum = String.valueOf(sum % 256);
         for (int i = 3; i > CheckSum.length(); i--) {
             CheckSum = "0" + CheckSum;
         }
-
+        System.out.println("Sum:\t" + sum +" Checksum:\t" + CheckSum);
         return CheckSum;
     }
 
@@ -273,6 +296,8 @@ public class FIXMessage {
     public String toString() {
         return MarshallMessage();
     }
+
+    //8=FIX.4.2|9=49|35=5|34=1|49=ARCA|52=20150916-04:14:05.306|56=TW|10=157|
 
     public String toJSONString() {
         JSONObject Data = new JSONObject();
