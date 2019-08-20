@@ -73,9 +73,15 @@ public class FIXMessage {
     private final int SendingTimeTag = 52;
 
     private @Getter @Setter String Symbol;
-    private @Getter @Setter String RoutingSenderID;
-    private @Getter @Setter String RoutingCompanyID;
-    private @Getter @Setter String RoutingReceiverID;
+    private @Getter
+    @Setter
+    int RoutingSenderID = 0;
+    private @Getter
+    @Setter
+    int RoutingCompanyID = 0;
+    private @Getter
+    @Setter
+    int RoutingReceiverID = 0;
     private @Getter @Setter String OrderTypeMarket;
     private @Getter @Setter float Price = 0;
     private @Getter @Setter int OrderQuantity = 0;
@@ -130,13 +136,13 @@ public class FIXMessage {
                     Symbol = splitTags[1];
                     break;
                 case "50":
-                    RoutingSenderID = splitTags[1];
+                    RoutingSenderID = Integer.valueOf(splitTags[1]);
                     break;
                 case "49":
-                    RoutingCompanyID = splitTags[1];
+                    RoutingCompanyID = Integer.valueOf(splitTags[1]);
                     break;
                 case "56":
-                    RoutingReceiverID = splitTags[1];
+                    RoutingReceiverID = Integer.valueOf(splitTags[1]);
                     break;
                 case "40":
                     OrderTypeMarket = splitTags[1];
@@ -188,16 +194,16 @@ public class FIXMessage {
     private String ConstructBody() {
         StringBuilder body = new StringBuilder();
         body.append(MessageSequenceNumberTag + "=" + MessageSequenceNumber + "|");
-        if (RoutingCompanyID != null) {
+        if (RoutingCompanyID != 0) {
             body.append(RoutingCompanyIDTag + "=" + RoutingCompanyID + "|");
         }
-        if (RoutingSenderID != null) {
+        if (RoutingSenderID != 0) {
             body.append(RoutingSenderIDTag + "=" + RoutingSenderID + "|");
         }
 
         body.append(SendingTimeTag + "=" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + "|");
 
-        if (RoutingReceiverID != null) {
+        if (RoutingReceiverID != 0) {
             body.append(RoutingReceiverIDTag + "=" + RoutingReceiverID + "|");
         }
 

@@ -16,13 +16,14 @@ public class BrokerServer implements Runnable {
     ByteBuffer buffer = ByteBuffer.allocate(2048);
     SQLite database;
     static int brokerID = 99999;
+    BrokerMessageHandler brokerMessageHandler = new BrokerMessageHandler();
 
-    List<AsynchronousSocketChannel> brokerAddresses;
-    MessageDispatcher messageDispatcher;
+//    List<AsynchronousSocketChannel> brokerAddresses;
+//    MessageDispatcher messageDispatcher;
 
-    public BrokerServer(AsynchronousChannelGroup group, MessageDispatcher messageDispatcher, SQLite database) {
+    public BrokerServer(AsynchronousChannelGroup group, SQLite database) {
         this.group = group;
-        this.messageDispatcher = messageDispatcher;
+//        this.messageDispatcher = messageDispatcher;
         this.database = database;
     }
 
@@ -44,8 +45,22 @@ public class BrokerServer implements Runnable {
                         while (!future.isDone()) {
                             System.out.println("Waiting for broker message...");
                             Thread.sleep(250);
+
                         }
-                        FIXMessage fixMessage = new FIXMessage(new String(buffer.array()).trim());
+
+                        System.out.println(new String(buffer.array()).trim());
+
+                        buffer.clear();
+
+                        System.out.println("Connection established " + clientSocket.getLocalAddress());
+
+//                        Sleep(3);
+//                        brokerMessageHandler.readMessage(clientSocket, brokerID);
+//                        fixMessage.setRoutingReceiverID(++brokerID);
+//                        System.out.println(fixMessage.toJSONString());
+//                        System.exit(0);
+
+//                        brokerMessageHandler.sendMessage("THis is the server");
 
 //                            if (!brokerAddresses.contains(clientSocket)) {
 //                                brokerAddresses.add(clientSocket);
@@ -56,8 +71,8 @@ public class BrokerServer implements Runnable {
 //                            }
 
 
-                        System.out.println("Message received " + fixMessage.toJSONString());
-                        TimeUnit.SECONDS.sleep(5);
+//                        System.out.println("Message received " + fixMessage.toJSONString());
+//                        TimeUnit.SECONDS.sleep(5);
 //                                database.SaveTransaction(fixMessage);
 //
 //                                messageDispatcher.AddBrokerAddress(fixMessage.getRoutingSenderID(), clientSocket);
@@ -67,10 +82,10 @@ public class BrokerServer implements Runnable {
 //                                messageDispatcher.SendMessageToBroker(fixMessage);
 
 
-                        while (!future.isDone()) {
-                            System.out.println("Waiting for FIX message to be sent back to broker...");
-                            Thread.sleep(200);
-                        }
+//                        while (!future.isDone()) {
+//                            System.out.println("Waiting for FIX message to be sent back to broker...");
+//                            Thread.sleep(200);
+//                        }
 
 //                            }
                     } catch (Exception e) {
@@ -120,5 +135,9 @@ public class BrokerServer implements Runnable {
 
     private static int setBrokerID() {
         return ++brokerID;
+    }
+
+    private static void Sleep(long seconds) throws InterruptedException {
+        TimeUnit.SECONDS.sleep(seconds);
     }
 }
