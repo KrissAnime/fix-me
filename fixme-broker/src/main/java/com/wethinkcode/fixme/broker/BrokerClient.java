@@ -1,5 +1,6 @@
 package com.wethinkcode.fixme.broker;
 
+
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -14,26 +15,33 @@ public class BrokerClient {
 
 
     public static void main(String args[]) throws Exception {
-        TestClient testClient1 = new TestClient("This is broker 1");
-        TestClient testClient2 = new TestClient("This is broker 2");
 
-        System.out.println("First broker started");
-        new Thread(testClient1).start();
+        new TestClient("This is broker").start();
 
-        TimeUnit.SECONDS.sleep(10);
+//        TestClient testClient1 = new TestClient("This is broker 1");
+//        TestClient testClient2 = new TestClient("This is broker 2");
 
-        System.out.println("Second broker started");
-        new Thread(testClient2).start();
+        System.out.println("Broker started");
+//        testClient1.start();
+//        testClient1.run();
+//        new Thread(testClient1).start();
+
+//        TimeUnit.SECONDS.sleep(10);
+//        new TestClient("This is broker 2nd").start();
+//
+//        System.out.println("Second broker started");
+//        testClient2.start();
+//        new Thread(testClient2).start();
     }
 }
 
-class TestClient implements Runnable {
+class TestClient extends Thread {
     private static SocketChannel client;
     private static ByteBuffer buffer = ByteBuffer.allocate(2048);
     private static BrokerClient broker = new BrokerClient();
     static String message;
     static boolean connected = false;
-    static String myAddress;
+    static String myAddress = null;
 
     public TestClient(String message) {
         this.message = message;
@@ -54,15 +62,19 @@ class TestClient implements Runnable {
 //                        Sleep(7);
 //                        connected = true;
 //                    }
+                if (myAddress == null) {
+                    client.write(ByteBuffer.wrap(message.getBytes()));
+                } else {
 
-                client.write(ByteBuffer.wrap(message.getBytes()));
+                    client.write(ByteBuffer.wrap(message.getBytes()));
+                }
                 Sleep(5);
                 client.read(buffer, buffer, new CompletionHandler<Integer, ByteBuffer>() {
                     @Override
                     public void completed(Integer result, ByteBuffer attachment) {
                         if (!connected) {
-                            String[] address = new String(buffer.array()).trim().split(":");
-                            myAddress = address[address.length - 1];
+//                            String[] address = new String(buffer.array()).trim().split(":");
+                            myAddress = new String(buffer.array()).trim();
                             System.out.println("My address " + myAddress);
                             connected = true;
                             buffer = ClearBuffer(buffer);
@@ -71,6 +83,8 @@ class TestClient implements Runnable {
                         System.out.println("Server said " + new String(buffer.array()).trim());
                         buffer.flip();
                         buffer = ClearBuffer(buffer);
+                        Sleep(8);
+
                         client.read(buffer, buffer, this);
                     }
 

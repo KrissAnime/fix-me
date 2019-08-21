@@ -3,11 +3,9 @@ package com.wethinkcode.fixme.router.models;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousChannelGroup;
-import java.nio.channels.AsynchronousServerSocketChannel;
-import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.CompletionHandler;
+import java.nio.channels.*;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -16,7 +14,7 @@ public class BrokerServer implements Runnable {
     ByteBuffer buffer = ByteBuffer.allocate(2048);
     SQLite database;
     static int brokerID = 99999;
-    BrokerMessageHandler brokerMessageHandler = new BrokerMessageHandler();
+//    BrokerMessageHandler brokerMessageHandler = new BrokerMessageHandler();
 
 //    List<AsynchronousSocketChannel> brokerAddresses;
 //    MessageDispatcher messageDispatcher;
@@ -32,78 +30,48 @@ public class BrokerServer implements Runnable {
         try {
             System.out.println("Broker Server is ready");
             AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open().bind(new InetSocketAddress("localhost", 5000));
-            buffer = ClearBuffer(buffer);
-
+//            while (true) {
+////            buffer = ClearBuffer(buffer);
+//
+//                Future<AsynchronousSocketChannel> client = server.accept();
+//                System.out.println("We have a new client " + client.get().getRemoteAddress());
+//                BrokerMessageHandler broker = new BrokerMessageHandler(client.get(), brokerID);
+//
+//                new Thread(broker).start();
+//
+//                group.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+//            }
+//            server.accept(null, this);
             //Accept message to be passed on
             server.accept(null, new CompletionHandler<AsynchronousSocketChannel, Object>() {
                 @Override
                 public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {
                     try {
+                        System.out.println("We have a new client " + clientSocket.getRemoteAddress());
+                        BrokerMessageHandler broker = new BrokerMessageHandler(clientSocket, ++brokerID);
 
-                        Future<Integer> future = clientSocket.read(buffer);
+                        new Thread(broker).start();
 
-                        while (!future.isDone()) {
-                            System.out.println("Waiting for broker message...");
-                            Thread.sleep(250);
-
-                        }
+//                        Future<Integer> future = clientSocket.read(buffer);
+//
+//                        while (!future.isDone()) {
+//                            System.out.println("Waiting for broker message...");
+//                            Thread.sleep(250);
+//
+//                        }
 
                         System.out.println(new String(buffer.array()).trim());
 
                         buffer.clear();
 
-                        System.out.println("Connection established " + clientSocket.getLocalAddress());
+//                        System.out.println("Connection established " + clientSocket.getLocalAddress());
 
-//                        Sleep(3);
-//                        brokerMessageHandler.readMessage(clientSocket, brokerID);
-//                        fixMessage.setRoutingReceiverID(++brokerID);
-//                        System.out.println(fixMessage.toJSONString());
-//                        System.exit(0);
-
-//                        brokerMessageHandler.sendMessage("THis is the server");
-
-//                            if (!brokerAddresses.contains(clientSocket)) {
-//                                brokerAddresses.add(clientSocket);
-//                                System.out.println("Broker client added " + clientSocket.getLocalAddress());
-//
-////                                fixMessage.setRoutingSenderID();
-////                                messageDispatcher.SendMessageToBroker(f);
-//                            }
-
-
-//                        System.out.println("Message received " + fixMessage.toJSONString());
-//                        TimeUnit.SECONDS.sleep(5);
-//                                database.SaveTransaction(fixMessage);
-//
-//                                messageDispatcher.AddBrokerAddress(fixMessage.getRoutingSenderID(), clientSocket);
-
-//                                fixMessage = messageDispatcher.SendMessageToMarket(fixMessage);
-
-//                                messageDispatcher.SendMessageToBroker(fixMessage);
-
-
-//                        while (!future.isDone()) {
-//                            System.out.println("Waiting for FIX message to be sent back to broker...");
-//                            Thread.sleep(200);
-//                        }
-
-//                            }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-//                        } catch (SQLException e) {
-//                            e.printStackTrace();
-//                        } catch (InterruptedException e) {
-//                            e.printStackTrace();
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
 
-//                    buffer = ClearBuffer(buffer);
-//                    System.out.println("String version " + attachment.toString());
                     server.accept(null, this);
-//                    FIXMessage fixMessage = new FIXMessage(new String());
-                };
+                }
 
                 @Override
                 public void failed(Throwable exc, Object attachment) {
@@ -112,13 +80,20 @@ public class BrokerServer implements Runnable {
                 }
             });
             group.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+//            new BrokerMessageHandler(client.get(), brokerID++).start();
+//            brokerMessageHandler.start().readMessage(client.get(), brokerID);
+//            server.accept(null, null);
         } catch (IOException e) {
             System.out.println("Error starting broker server");
             e.printStackTrace();
         } catch (InterruptedException e) {
             System.out.println("Broker server was interrupted");
             e.printStackTrace();
-        }
+        }/* catch (ExecutionException e) {
+            e.printStackTrace();
+        }*/
+
+
 
     }
 

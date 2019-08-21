@@ -94,24 +94,7 @@ public class FIXMessage {
 
     private @Getter String marshallMessage;
 
-    public FIXMessage(String marshallMessage){
-        String valueToCheck = marshallMessage.split("\\|")[marshallMessage.split("\\|").length - 1].split("=")[1];
-
-        System.out.println("Val to check:\t" + valueToCheck + " checksum val:\t" + !valueToCheck.equals(ConstructCheckSum(marshallMessage)) + " val length:\t");
-
-        if (valueToCheck.length() != 3 && !valueToCheck.equals(ConstructCheckSum(marshallMessage))) {
-            this.marshallMessage = null;
-        } else {
-            this.marshallMessage = marshallMessage;
-            ParseMessage();
-        }
-//        this.marshallMessage = marshallMessage;
-//        ParseMessage(marshallMessage);
-//        System.out.println("Header " + ConstructHeader());
-//        System.out.println("Body " + ConstructBody());
-//        System.out.println("Trailer " + ConstructTrailer());
-
-//        System.out.println("Final constructed message " + MarshallMessage());
+    public FIXMessage() {
     }
 
     //Example fix message which would request authentication from the server
@@ -122,6 +105,20 @@ public class FIXMessage {
 
     public String MarshallMessage() {
         return (ConstructHeader() + ConstructBody() + ConstructTrailer());
+    }
+
+    public void UnMarshallMessage(String message) {
+        marshallMessage = message;
+        String valueToCheck = marshallMessage.split("\\|")[marshallMessage.split("\\|").length - 1].split("=")[1];
+
+        System.out.println("Val to check:\t" + valueToCheck + " checksum val:\t" + !valueToCheck.equals(ConstructCheckSum(marshallMessage)) + " val length:\t");
+
+        if (valueToCheck.length() != 3 && !valueToCheck.equals(ConstructCheckSum(marshallMessage))) {
+            this.marshallMessage = null;
+        } else {
+            this.marshallMessage = marshallMessage;
+            ParseMessage();
+        }
     }
 
     private void ParseMessage() {
@@ -179,7 +176,7 @@ public class FIXMessage {
         StringBuilder header = new StringBuilder();
 
         //First append the fix version used for the messaging
-        header.append("8=FIX.4.4|");
+        header.append("8=FIX.4.0|");
 
         //Append the body length of the message along with its tag
         header.append("9=" + CalculateBodyLength() + "|");
