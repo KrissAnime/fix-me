@@ -12,6 +12,9 @@ buildNumber.properties
 .mvn/timing.properties
 
 fixme-broker/target/
+fixme-broker/.classpath
+fixme-broker/.factorypath
+fixme-broker/.project
 fixme-broker/pom.xml.tag
 fixme-broker/pom.xml.releaseBackup
 fixme-broker/pom.xml.versionsBackup
@@ -22,6 +25,9 @@ fixme-broker/buildNumber.properties
 fixme-broker/.mvn/timing.properties
 
 fixme-market/target/
+fixme-market/.classpath
+fixme-market/.factorypath
+fixme-market/.project
 fixme-market/pom.xml.tag
 fixme-market/pom.xml.releaseBackup
 fixme-market/pom.xml.versionsBackup
@@ -32,6 +38,9 @@ fixme-market/buildNumber.properties
 fixme-market/.mvn/timing.properties
 
 fixme-router/target/
+fixme-router/.classpath
+fixme-router/.factorypath
+fixme-router/.project
 fixme-router/pom.xml.tag
 fixme-router/pom.xml.releaseBackup
 fixme-router/pom.xml.versionsBackup
@@ -43,3 +52,4 @@ fixme-router/.mvn/timing.properties
 
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar
+fixme.db
