@@ -44,4 +44,3 @@ Price => 44 = ? (Float)
 54 => Side (Buy = 1 / Sell = 2)
 Market Response => |56=?|50=?|39=?|10=checksum|
 Broker Message => |50=?|MARKET=?|55=?|38=?|44=?|54=?|10=checksum| (edited)
-
