@@ -54,7 +54,7 @@ public class Server {
             AsynchronousChannelGroup group = AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(3));
 //
             BrokerServer brokerServer = new BrokerServer(group, database);
-//            MarketServer marketServer = new MarketServer(group, messageDispatcher, database);
+//            MarketServer marketServer = new MarketServer(group, database);
 //
             new Thread(brokerServer).start();
 //            new Thread(marketServer).start();

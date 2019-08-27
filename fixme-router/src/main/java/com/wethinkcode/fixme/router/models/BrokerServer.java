@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -13,6 +14,7 @@ public class BrokerServer implements Runnable {
     AsynchronousChannelGroup group;
     ByteBuffer buffer = ByteBuffer.allocate(2048);
     SQLite database;
+    Hashtable<Integer, AsynchronousSocketChannel> brokerMap = new Hashtable<>();
     static int brokerID = 99999;
 //    BrokerMessageHandler brokerMessageHandler = new BrokerMessageHandler();
 
@@ -29,7 +31,7 @@ public class BrokerServer implements Runnable {
     public void run() {
         try {
             System.out.println("Broker Server is ready");
-            AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open().bind(new InetSocketAddress("localhost", 5000));
+            AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open().bind(new InetSocketAddress("localhost", 5001));
 //            while (true) {
 ////            buffer = ClearBuffer(buffer);
 //
@@ -47,7 +49,7 @@ public class BrokerServer implements Runnable {
                 @Override
                 public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {
                     try {
-                        System.out.println("We have a new client " + clientSocket.getRemoteAddress());
+                        System.out.println("We have a new client\tRemote: " + clientSocket.getRemoteAddress() + "\tLocal: " + clientSocket.getLocalAddress() + "\tclient: " + clientSocket);
                         BrokerMessageHandler broker = new BrokerMessageHandler(clientSocket, ++brokerID);
 
                         new Thread(broker).start();

@@ -17,9 +17,9 @@ public class MarketServer implements Runnable {
     MessageDispatcher messageDispatcher;
     SQLite database;
 
-    public MarketServer(AsynchronousChannelGroup group, MessageDispatcher messageDispatcher, SQLite database) {
+    public MarketServer(AsynchronousChannelGroup group, SQLite database) {
         this.group = group;
-        this.messageDispatcher = messageDispatcher;
+//        this.messageDispatcher = messageDispatcher;
         this.database = database;
     }
 

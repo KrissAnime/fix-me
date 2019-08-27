@@ -29,7 +29,7 @@ public class BrokerMessageHandler implements Runnable {
     public void run() {
         try {
             sendNewID();
-            readMessage();
+//            readMessage();
             Sleep(8);
             FIXMessage fixMessage = new FIXMessage();
             fixMessage.UnMarshallMessage("8=FIX.4.4|9=106|35=A|34=1|52=20170117- 08:03:04.509|98=0|108=30|141=Y|10=066|");
@@ -73,7 +73,6 @@ public class BrokerMessageHandler implements Runnable {
 
         System.out.println("Sending " + fixMessage.MarshallMessage());
             Future<Integer> future = broker.write(ByteBuffer.wrap(fixMessage.MarshallMessage().getBytes()));
-
             while (!future.isDone()) {
                 System.out.println("Waiting for broker message to be sent...");
                 Thread.sleep(250);
