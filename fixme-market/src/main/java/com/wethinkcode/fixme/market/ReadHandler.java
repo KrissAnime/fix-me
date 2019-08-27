@@ -25,7 +25,14 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
                 return;
             } else {
                 System.out.println("message : "+ message);
+                ////////
+                attachment.byteBuffer.clear();
             }
+        } else {
+            attachment.byteBuffer.clear();
+            System.out.println("go again");
+            attachment.socketChannel.read(attachment.byteBuffer, attachment, this);
+        }
         }
 
     }
