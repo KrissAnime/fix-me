@@ -10,13 +10,14 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
     @Override
     public void completed(Integer result, ChannelDetails attachment) {
         System.out.println("buffer === " + result);
+        System.out.println("Read status === " + attachment.readStatus);
         if (result == -1)
         {
             attachment.mainThread.interrupt();
             System.out.println("error, going offline");
             return ;
         }
-        else if (attachment.readStatus == 1){
+        else if (attachment.readStatus == 1) {
             String message = this.getBufferMsg(attachment);
             System.out.println("message -> " + message);
             if ((attachment.MarketID = this.setMarketId(attachment, message)) > -1) {
@@ -25,9 +26,17 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
                 return;
             } else {
                 System.out.println("message : "+ message);
+                ////////
+                attachment.byteBuffer.clear();
+                attachment.readStatus = 1;
+                attachment.socketChannel.read(attachment.byteBuffer, attachment, this);
             }
+        } else {
+            attachment.byteBuffer.clear();
+            System.out.println("go again");
+            attachment.readStatus = 1;
+            attachment.socketChannel.read(attachment.byteBuffer, attachment, this);
         }
-
     }
 
     @Override

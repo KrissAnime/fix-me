@@ -18,12 +18,12 @@ public class SQLite {
         }
     }
 
-    public void SaveTransaction(FIXMessage fixMessage) throws SQLException {
+    public void SaveTransaction(String message) throws SQLException {
         Connection connection = connect();
         String query = "INSERT INTO `TRANSACTIONS` (`fix_message`) VALUES (?)";
         PreparedStatement preparedStatement = connection.prepareStatement(query);
 
-        preparedStatement.setString(1, fixMessage.toString());
+        preparedStatement.setString(1, message);
 
         preparedStatement.executeUpdate();
         preparedStatement.close();

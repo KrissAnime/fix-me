@@ -86,11 +86,13 @@ public class Market {
         try
         {
             Thread.currentThread().join();
+            System.out.println("Joined thread");
         }
         catch(Exception e)
         {
 
         }
+        System.out.println("End of program?");
 
     }
 

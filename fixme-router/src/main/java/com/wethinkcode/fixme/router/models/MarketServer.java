@@ -7,76 +7,85 @@ import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
+import java.util.Hashtable;
 import java.util.concurrent.TimeUnit;
 
  /*** OLD VERSION OF SERVER ***/
 
-public class MarketServer implements Runnable {
-    AsynchronousChannelGroup group;
-    ByteBuffer buffer = ByteBuffer.allocate(2048);
-    MessageDispatcher messageDispatcher;
-    SQLite database;
+ public class MarketServer implements Runnable {
+     AsynchronousChannelGroup group;
+     ByteBuffer buffer = ByteBuffer.allocate(2048);
+     SQLite database;
+     Hashtable<Integer, AsynchronousSocketChannel> brokerMap = new Hashtable<>();
+     static int brokerID = 99999;
 
-    public MarketServer(AsynchronousChannelGroup group, SQLite database) {
-        this.group = group;
-//        this.messageDispatcher = messageDispatcher;
-        this.database = database;
-    }
 
-    @Override
-    public void run() {
-        try {
-            System.out.println("Market Server is ready");
-            AsynchronousServerSocketChannel server = AsynchronousServerSocketChannel.open().bind(new InetSocketAddress("localhost", 5001));
-            server.accept(null, new CompletionHandler<AsynchronousSocketChannel, Object>() {
-                @Override
-                public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {
-//                    synchronized (clientAddresses) {
-//                        try {
-//                            if (!clientAddresses.contains(clientSocket.getLocalAddress())) {
-//                                clientAddresses.add(clientSocket.getLocalAddress());
-//                                System.out.println("Adding market client " + clientSocket.getLocalAddress());
-//                            }
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-                    clientSocket.read(buffer);
-                    System.out.println("Market Buffer " + new String(buffer.array()).trim());
-                    buffer.flip();
-                    buffer = ClearBuffer(buffer);
-                    System.out.println("Market attachment" + attachment);
-                    clientSocket.write(ByteBuffer.wrap("This is the server to market".getBytes()));
+     public MarketServer(AsynchronousChannelGroup group, SQLite database) {
+         this.group = group;
+         this.database = database;
+     }
 
-//                    System.out.println("String version " + attachment.toString());
-                    server.accept(null, this);
-//                    FIXMessage fixMessage = new FIXMessage(new String());
-                };
+     @Override
+     public void run() {
+         try {
+             System.out.println("Market Server is ready");
+             AsynchronousServerSocketChannel marketserver = AsynchronousServerSocketChannel.open().bind(new InetSocketAddress("localhost", 5001));
+             marketserver.accept(null, new CompletionHandler<AsynchronousSocketChannel, Object>() {
+                 @Override
+                 public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {
+                     try {
+                         System.out.println("We have a new market client\tRemote: " + clientSocket.getRemoteAddress() + "\tLocal: " + clientSocket.getLocalAddress() + "\tclient: " + clientSocket);
+                         MessageHandler broker = new MessageHandler(clientSocket, ++brokerID);
 
-                @Override
-                public void failed(Throwable exc, Object attachment) {
-                    System.out.println("There was an error");
+                         new Thread(broker).start();
+                         System.out.println(new String(buffer.array()).trim());
 
-                }
-            });
-            group.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-        } catch (IOException e) {
-            System.out.println("Error starting market server");
+                         buffer.clear();
+
+                     } catch (Exception e) {
+                         e.printStackTrace();
+                     }
+
+                     marketserver.accept(null, this);
+                 }
+
+                 @Override
+                 public void failed(Throwable exc, Object attachment) {
+                     System.out.println("There was an error");
+
+                 }
+             });
+             group.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+         } catch (IOException e) {
+             System.out.println("Error starting broker server");
+             e.printStackTrace();
+         } catch (InterruptedException e) {
+             System.out.println("Broker server was interrupted");
+             e.printStackTrace();
+         }/* catch (ExecutionException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            System.out.println("Market server was interrupted");
-            e.printStackTrace();
-        }
-    }
+        }*/
 
-    private static ByteBuffer ClearBuffer(ByteBuffer buffer) {
+
+
+     }
+
+     private static ByteBuffer ClearBuffer(ByteBuffer buffer) {
 //        System.out.println("Before clear buffer" + new String(buffer.array()).trim());
-        buffer.clear();
-        buffer = ByteBuffer.allocate(2048);
-        buffer.clear();
-        buffer.put(new byte[2048]);
-        buffer.clear();
+         buffer.clear();
+         buffer = ByteBuffer.allocate(2048);
+         buffer.clear();
+         buffer.put(new byte[2048]);
+         buffer.clear();
 //        System.out.println("After clear buffer" + new String(buffer.array()).trim());
-        return buffer;
-    }
-}
+         return buffer;
+     }
+
+     private static int setBrokerID() {
+         return ++brokerID;
+     }
+
+     private static void Sleep(long seconds) throws InterruptedException {
+         TimeUnit.SECONDS.sleep(seconds);
+     }
+ }

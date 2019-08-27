@@ -52,9 +52,8 @@ public class Server {
 //            MessageDispatcher messageDispatcher = new MessageDispatcher();
             SQLite database = new SQLite();
             AsynchronousChannelGroup group = AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(3));
-//
-            BrokerServer brokerServer = new BrokerServer(group, database);
-//            MarketServer marketServer = new MarketServer(group, database);
+            MarketServer marketServer = new MarketServer(group, database);
+            BrokerServer brokerServer = new BrokerServer(group, database, marketServer);
 //
             new Thread(brokerServer).start();
 //            new Thread(marketServer).start();
