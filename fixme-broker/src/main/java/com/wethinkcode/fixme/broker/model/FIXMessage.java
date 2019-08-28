@@ -83,7 +83,7 @@ public class FIXMessage {
     int RoutingReceiverID = 0;
     private @Getter @Setter String OrderTypeMarket;
     private @Getter @Setter float Price = 0;
-    private @Getter @Setter float OrderQuantity = 0;
+    private @Getter @Setter Integer OrderQuantity = 0;
     private @Getter @Setter String Side;
     private @Getter @Setter String Status;
     private @Getter @Setter String MessageType;
@@ -104,6 +104,7 @@ public class FIXMessage {
             this.marshallMessage = marshallMessage;
             ParseMessage();
         }
+
 //        this.marshallMessage = marshallMessage;
 //        ParseMessage(marshallMessage);
 //        System.out.println("Header " + ConstructHeader());
