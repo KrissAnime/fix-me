@@ -1,4 +1,4 @@
-package com.wethinkcode.fixme.market;
+package com.wethinkcode.fixme.market.java;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;

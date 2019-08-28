@@ -1,6 +1,4 @@
-package com.wethinkcode.fixme.market;
-
-import com.wethinkcode.fixme.market.ChannelDetails;
+package com.wethinkcode.fixme.market.java;
 
 import java.nio.channels.CompletionHandler;
 import java.nio.charset.Charset;
@@ -26,12 +24,15 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
             } else {
                 System.out.println("message : "+ message);
                 ////////
+
                 attachment.byteBuffer.clear();
                 attachment.readStatus = 1;
                 attachment.socketChannel.read(attachment.byteBuffer, attachment, this);
             }
         } else {
             attachment.byteBuffer.clear();
+            brokerMessage();
+
             System.out.println("go again");
             attachment.readStatus = 1;
             attachment.socketChannel.read(attachment.byteBuffer, attachment, this);
@@ -61,4 +62,12 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
         }
         return -1;
     }
+
+    public void brokerMessage(){
+        String Bmsg = "|50=00001|MARKET=jse|55=ZAR|38=21|44=1.9|54=1|10=066";
+        MarketMessageHandler msg = new MarketMessageHandler(Bmsg);
+//        System.out.println(msg.market + " --- " + msg.checksum);
+    }
 }
+
+
