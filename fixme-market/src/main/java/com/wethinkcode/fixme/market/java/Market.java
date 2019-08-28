@@ -41,6 +41,8 @@ public class Market {
         SocketAddress address = new InetSocketAddress(host, port);
         Future<Void> future = channel.connect(address);
         future.get();
+        System.out.println("Market connected");
+//        channel.write(ByteBuffer.wrap("".getBytes()));
 
         this.channelDetails.socketChannel = channel;
         this.channelDetails.readStatus = 1;
@@ -52,11 +54,13 @@ public class Market {
         try
         {
             Thread.currentThread().join();
+            System.out.println("Joined thread");
         }
         catch(Exception e)
         {
 
         }
+        System.out.println("End of program?");
 
     }
 
