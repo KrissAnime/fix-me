@@ -67,7 +67,6 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
 
     public void brokerMessage(String Bmsg){
         MarketMessageHandler msg = new MarketMessageHandler(Bmsg);
-//        System.out.println(msg.market + " --- " + msg.checksum);
     }
 }
 
