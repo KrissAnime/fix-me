@@ -8,14 +8,13 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
     @Override
     public void completed(Integer result, ChannelDetails attachment) {
         System.out.println("buffer === " + result);
-        System.out.println("Read status === " + attachment.readStatus);
         if (result == -1)
         {
             attachment.mainThread.interrupt();
             System.out.println("error, going offline");
             return ;
         }
-        else if (attachment.readStatus == 1) {
+        else if (attachment.readStatus == 1){
             String message = this.getBufferMsg(attachment);
             System.out.println("message -> " + message);
             if ((attachment.MarketID = this.setMarketId(attachment, message)) > -1) {
@@ -25,6 +24,9 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
             } else {
                 System.out.println("message : "+ message);
                 ////////
+                String Bmsg = "|50=00001|MARKET=jse|55=ZAR|38=2|44=1.9|54=1|10=066";
+                brokerMessage(message);
+
 
                 attachment.byteBuffer.clear();
                 attachment.readStatus = 1;
@@ -32,12 +34,12 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
             }
         } else {
             attachment.byteBuffer.clear();
-            brokerMessage();
 
             System.out.println("go again");
             attachment.readStatus = 1;
             attachment.socketChannel.read(attachment.byteBuffer, attachment, this);
         }
+
     }
 
     @Override
@@ -63,8 +65,7 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
         return -1;
     }
 
-    public void brokerMessage(){
-        String Bmsg = "|50=00001|MARKET=jse|55=ZAR|38=21|44=1.9|54=1|10=066";
+    public void brokerMessage(String Bmsg){
         MarketMessageHandler msg = new MarketMessageHandler(Bmsg);
 //        System.out.println(msg.market + " --- " + msg.checksum);
     }
