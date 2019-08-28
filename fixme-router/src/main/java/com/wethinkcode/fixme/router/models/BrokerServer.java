@@ -9,25 +9,20 @@ import java.util.concurrent.TimeUnit;
 
 public class BrokerServer implements Runnable {
     AsynchronousChannelGroup group;
-    ByteBuffer buffer = ByteBuffer.allocate(2048);
-    SQLite database;
-    Hashtable<Integer, AsynchronousSocketChannel> brokerMap = new Hashtable<>();
+    Hashtable<Integer, AsynchronousSocketChannel> routingTable;
     static int brokerID = 99999;
-    MarketServer marketServer;
 
 
-    public BrokerServer(AsynchronousChannelGroup group, SQLite database, MarketServer marketServer) {
+    public BrokerServer(AsynchronousChannelGroup group, Hashtable<Integer, AsynchronousSocketChannel> routingTable) {
         this.group = group;
-        this.database = database;
-        this.marketServer = marketServer;
-        new Thread(this.marketServer).start();
+        this.routingTable = routingTable;
     }
 
     @Override
     public void run() {
         try {
             System.out.println("Broker Server is ready");
-            AsynchronousServerSocketChannel brokerserver = AsynchronousServerSocketChannel.open().bind(new InetSocketAddress("localhost", 5001));
+            AsynchronousServerSocketChannel brokerserver = AsynchronousServerSocketChannel.open().bind(new InetSocketAddress("localhost", 5000));
             brokerserver.accept(null, new CompletionHandler<AsynchronousSocketChannel, Object>() {
                 @Override
                 public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {
@@ -36,10 +31,27 @@ public class BrokerServer implements Runnable {
                         MessageHandler broker = new MessageHandler(clientSocket, ++brokerID);
 
                         new Thread(broker).start();
-                        System.out.println(new String(buffer.array()).trim());
 
-
-                        buffer.clear();
+                        if (routingTable.contains(clientSocket)) {
+                            System.out.println("Client already exists");
+                            broker.sendMessage(routingTable.get(0));
+                        } else {
+                            routingTable.put(brokerID, clientSocket);
+                            broker.sendNewID();
+                            System.out.println("New client added");
+                        }
+//                        broker.readMessage();
+//                        if (!broker.firstConnection) {
+//                            if (routingTable.contains(0)) {
+//                                System.out.println("Market not in routing table");
+//                            } else {
+//                                System.out.println("Sending market a message");
+//                                broker.sendMessage(routingTable.get(0));
+//                            }
+//                        } else {
+//                            System.out.println("Adding broker to routing table");
+//                            routingTable.put(brokerID, clientSocket);
+//                        }
 
                     } catch (Exception e) {
                         e.printStackTrace();

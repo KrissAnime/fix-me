@@ -14,15 +14,13 @@ import java.util.concurrent.TimeUnit;
 
  public class MarketServer implements Runnable {
      AsynchronousChannelGroup group;
-     ByteBuffer buffer = ByteBuffer.allocate(2048);
-     SQLite database;
-     Hashtable<Integer, AsynchronousSocketChannel> brokerMap = new Hashtable<>();
-     static int brokerID = 99999;
+     Hashtable<Integer, AsynchronousSocketChannel> routingTable;
+     static int brokerID = 0;
 
 
-     public MarketServer(AsynchronousChannelGroup group, SQLite database) {
+     public MarketServer(AsynchronousChannelGroup group, Hashtable<Integer, AsynchronousSocketChannel> routingTable) {
          this.group = group;
-         this.database = database;
+         this.routingTable = routingTable;
      }
 
      @Override
@@ -35,12 +33,17 @@ import java.util.concurrent.TimeUnit;
                  public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {
                      try {
                          System.out.println("We have a new market client\tRemote: " + clientSocket.getRemoteAddress() + "\tLocal: " + clientSocket.getLocalAddress() + "\tclient: " + clientSocket);
-                         MessageHandler broker = new MessageHandler(clientSocket, ++brokerID);
+                         MessageHandler broker = new MessageHandler(clientSocket, brokerID);
 
                          new Thread(broker).start();
-                         System.out.println(new String(buffer.array()).trim());
 
-                         buffer.clear();
+
+                         //                         broker.readMessage();
+                         if (!routingTable.contains(clientSocket)) {
+                             System.out.println("Adding market to routing table");
+                             routingTable.put(brokerID, clientSocket);
+//
+                         }
 
                      } catch (Exception e) {
                          e.printStackTrace();

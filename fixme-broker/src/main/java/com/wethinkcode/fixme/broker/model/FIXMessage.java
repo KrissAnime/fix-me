@@ -102,7 +102,7 @@ public class FIXMessage {
             this.marshallMessage = null;
         } else {
             this.marshallMessage = marshallMessage;
-            ParseMessage();
+//            ParseMessage();
         }
 //        this.marshallMessage = marshallMessage;
 //        ParseMessage(marshallMessage);
@@ -123,55 +123,55 @@ public class FIXMessage {
         return (ConstructHeader() + ConstructBody() + ConstructTrailer());
     }
 
-    private void ParseMessage() {
-        String[] splitLine = marshallMessage.split("\\|");
-        for (String keyValue: splitLine) {
-            String[] splitTags = keyValue.split("=");
-            switch (splitTags[0]) {
-                case "35":
-                    MessageType = splitTags[1];
-                    break;
-                case "55":
-                    Symbol = splitTags[1];
-                    break;
-                case "50":
-                    RoutingSenderID = Integer.valueOf(splitTags[1]);
-                    break;
-                case "49":
-                    RoutingCompanyID = Integer.valueOf(splitTags[1]);
-                    break;
-                case "56":
-                    RoutingReceiverID = Integer.valueOf(splitTags[1]);
-                    break;
-                case "40":
-                    OrderTypeMarket = splitTags[1];
-                    break;
-                case "44":
-                    Price = Float.parseFloat(splitTags[1]);
-                    break;
-                case "38":
-                    OrderQuantity = Integer.parseInt(splitTags[1]);
-                    break;
-                case "54":
-                    Side = splitTags[1];
-                    break;
-                case "39":
-                    Status = splitTags[1];
-                    break;
-                case "34":
-                    MessageSequenceNumber = Integer.parseInt(splitTags[1]);
-                    break;
-                case "52":
-                    SendingTime = splitTags[1];
-                    break;
-                case "10":
-                    CheckSum = splitTags[1];
-                    break;
-                default:
-//                    System.out.println("Default found in fix message tag:\t" + splitTags[0] + " message:\t" + splitTags[1]);
-            }
-        }
-    }
+//    private void ParseMessage() {
+//        String[] splitLine = marshallMessage.split("\\|");
+//        for (String keyValue: splitLine) {
+//            String[] splitTags = keyValue.split("=");
+//            switch (splitTags[0]) {
+//                case "35":
+//                    MessageType = splitTags[1];
+//                    break;
+//                case "55":
+//                    Symbol = splitTags[1];
+//                    break;
+//                case "50":
+//                    RoutingSenderID = Integer.valueOf(splitTags[1]);
+//                    break;
+//                case "49":
+//                    RoutingCompanyID = Integer.valueOf(splitTags[1]);
+//                    break;
+//                case "56":
+//                    RoutingReceiverID = Integer.valueOf(splitTags[1]);
+//                    break;
+//                case "40":
+//                    OrderTypeMarket = splitTags[1];
+//                    break;
+//                case "44":
+//                    Price = Float.parseFloat(splitTags[1]);
+//                    break;
+//                case "38":
+//                    OrderQuantity = Integer.parseInt(splitTags[1]);
+//                    break;
+//                case "54":
+//                    Side = splitTags[1];
+//                    break;
+//                case "39":
+//                    Status = splitTags[1];
+//                    break;
+//                case "34":
+//                    MessageSequenceNumber = Integer.parseInt(splitTags[1]);
+//                    break;
+//                case "52":
+//                    SendingTime = splitTags[1];
+//                    break;
+//                case "10":
+//                    CheckSum = splitTags[1];
+//                    break;
+//                default:
+////                    System.out.println("Default found in fix message tag:\t" + splitTags[0] + " message:\t" + splitTags[1]);
+//            }
+//        }
+//    }
 
     private String ConstructHeader() {
         CalculateBodyLength();

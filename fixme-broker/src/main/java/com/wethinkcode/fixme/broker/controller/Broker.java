@@ -72,9 +72,9 @@ public class Broker {
         String fixMessage = null;
         String [] messages = new String [] {"50="+idAddress+"|MARKET=jse|54=2|55=zar|44=201.75|38=0.8", "50="+idAddress+"|35=D|MARKET=jse|54=2|55=usd|44=11.75|38=2.4"};
         for (int i = 0; i < messages.length; i++) {
-            fixMessage = new FIXMessage(messages[i]).MarshallMessage();
-            byte [] message = fixMessage.getBytes();
-            ByteBuffer buffer = ByteBuffer.wrap(message);
+//            fixMessage = new FIXMessage(messages[i]).MarshallMessage();
+//            byte [] message = fixMessage.getBytes();
+            ByteBuffer buffer = ByteBuffer.wrap(messages[0].getBytes());
             Future result = client.write(buffer);
             if (result.isDone()) {
                 buffer.clear();

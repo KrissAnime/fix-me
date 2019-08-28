@@ -16,7 +16,7 @@ public class Server {
     /**
      * Hashmap is not thread safe whereas hashtable is synchronized
      */
-    static Hashtable<Integer, String> routingTable = new Hashtable<>();
+    static Hashtable<Integer, AsynchronousSocketChannel> routingTable = new Hashtable<>();
 
     static final String[] randomResponses = {
             "This is the server",
@@ -50,13 +50,12 @@ public class Server {
              * Sidelined code until later use
              */
 //            MessageDispatcher messageDispatcher = new MessageDispatcher();
-            SQLite database = new SQLite();
             AsynchronousChannelGroup group = AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(3));
-            MarketServer marketServer = new MarketServer(group, database);
-            BrokerServer brokerServer = new BrokerServer(group, database, marketServer);
+            MarketServer marketServer = new MarketServer(group, routingTable);
+            BrokerServer brokerServer = new BrokerServer(group, routingTable);
 //
             new Thread(brokerServer).start();
-//            new Thread(marketServer).start();
+            new Thread(marketServer).start();
             /**
              * Sidelined code until later use
              */

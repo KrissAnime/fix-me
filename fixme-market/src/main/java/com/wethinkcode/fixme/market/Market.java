@@ -75,6 +75,8 @@ public class Market {
         SocketAddress address = new InetSocketAddress(host, port);
         Future<Void> future = channel.connect(address);
         future.get();
+        System.out.println("Market connected");
+//        channel.write(ByteBuffer.wrap("".getBytes()));
 
         this.channelDetails.socketChannel = channel;
         this.channelDetails.readStatus = 1;
