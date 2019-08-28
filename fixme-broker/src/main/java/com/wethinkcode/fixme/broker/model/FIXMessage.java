@@ -83,7 +83,7 @@ public class FIXMessage {
     int RoutingReceiverID = 0;
     private @Getter @Setter String OrderTypeMarket;
     private @Getter @Setter float Price = 0;
-    private @Getter @Setter float OrderQuantity = 0;
+    private @Getter @Setter Integer OrderQuantity = 0;
     private @Getter @Setter String Side;
     private @Getter @Setter String Status;
     private @Getter @Setter String MessageType;
@@ -94,23 +94,9 @@ public class FIXMessage {
     private @Getter String marshallMessage;
 
      public FIXMessage(String marshallMessage){
-      String valueToCheck = marshallMessage.split("\\|")[marshallMessage.split("\\|").length - 1].split("=")[1];
 
-        System.out.println("Val to check:\t" + valueToCheck + " checksum val:\t" + !valueToCheck.equals(ConstructCheckSum(marshallMessage)) + " val length:\t");
-
-        if (valueToCheck.length() != 3 && !valueToCheck.equals(ConstructCheckSum(marshallMessage))) {
-            this.marshallMessage = null;
-        } else {
             this.marshallMessage = marshallMessage;
-//            ParseMessage();
-        }
-//        this.marshallMessage = marshallMessage;
-//        ParseMessage(marshallMessage);
-//        System.out.println("Header " + ConstructHeader());
-//        System.out.println("Body " + ConstructBody());
-//        System.out.println("Trailer " + ConstructTrailer());
 
-//        System.out.println("Final constructed message " + MarshallMessage());
     }
 
     //Example fix message which would request authentication from the server
@@ -120,7 +106,7 @@ public class FIXMessage {
     //8=FIX.4.4|9=106|35=A|34=1|49=CSERVER|50=TRADE|52=20170117- 08:03:04.509|56=theBroker.12345|57=any_string|98=0|108=30|141=Y|10=066|
 
     public String MarshallMessage() {
-        return (ConstructHeader() + ConstructBody() + ConstructTrailer());
+        return ( ConstructBody() + ConstructTrailer());
     }
 
     private void ParseMessage() {
@@ -150,7 +136,7 @@ public class FIXMessage {
                     Price = Float.parseFloat(splitTags[1]);
                     break;
                 case "38":
-                    OrderQuantity = Float.parseFloat(splitTags[1]);
+                    OrderQuantity = Integer.parseInt(splitTags[1]);
                     break;
                 case "54":
                     Side = splitTags[1];
@@ -173,21 +159,7 @@ public class FIXMessage {
         }
     }
 
-    private String ConstructHeader() {
-        CalculateBodyLength();
-        StringBuilder header = new StringBuilder();
 
-        //First append the fix version used for the messaging
-        header.append("8=FIX.4.4|");
-
-        //Append the body length of the message along with its tag
-        header.append("9=" + CalculateBodyLength() + "|");
-
-        //Indicate the message type so it can be handled correctly
-        header.append("35=" + MessageType + "|");
-
-        return header.toString();
-    }
 
     //8=FIX.4.4|9=106|35=A|34=1|49=CSERVER|50=TRADE|52=20170117- 08:03:04.509|56=theBroker.12345|57=any_string|98=0|108=30|141=Y|10=066|
     private String ConstructBody() {
@@ -258,7 +230,7 @@ public class FIXMessage {
 //        System.out.println("message length " + message.length());
 //        System.out.println("Message split " + (message.split("\\|")[message.split("\\|").length - 1].length() - 1));
 //        System.out.println("Final char " + message.charAt(length));
-        System.out.println(message);
+        //System.out.println(message);
 //        for (String splitMessage: messageSplit) {
 //            String[] key = splitMessage.split("=");
 //            if (!key[0].equals("8") && !key[0].equals("10") && !key[0].equals("9")) {

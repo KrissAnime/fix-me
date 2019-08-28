@@ -4,11 +4,11 @@ import lombok.Getter;
 
 public class BrokerInstruments {
     @Getter
-    private Double usdInstrument = 0;
+    private Integer usdInstrument;
     @Getter
     private Float usdPrice;
     @Getter
-    private Double zarInstrument = 0;
+    private Integer zarInstrument = 0;
     @Getter
     private Float zarPrice;
 
@@ -16,7 +16,7 @@ public class BrokerInstruments {
 
     }
 
-    public void AddInstrument(Float quantity, Float price, String type){
+    public void AddInstrument(Integer quantity, Float price, String type){
         if(type == "zar") {
             this.zarInstrument = this.zarInstrument + quantity;
             this.zarPrice = price;
