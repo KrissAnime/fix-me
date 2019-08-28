@@ -102,7 +102,7 @@ public class FIXMessage {
             this.marshallMessage = null;
         } else {
             this.marshallMessage = marshallMessage;
-//            ParseMessage();
+            ParseMessage();
         }
 //        this.marshallMessage = marshallMessage;
 //        ParseMessage(marshallMessage);
