@@ -59,13 +59,14 @@ public class Broker {
     }
     public void readMessage(AsynchronousSocketChannel client) {
         Future result = client.read(buffer);
-        if (result.isDone()) {
-            FIXMessage fixMessage = new FIXMessage(new String(buffer.array()).trim());
-            if (fixMessage.getStatus() == "8") {
-                brokerInstruments.AddInstrument(fixMessage.getOrderQuantity(), fixMessage.getPrice(), fixMessage.getSymbol());
-            }
-            System.out.println("System response "+ new String(buffer.array()).trim());
+        if (!result.isDone()) {
+            Thread.sleep(250);
         }
+        FIXMessage fixMessage = new FIXMessage(new String(buffer.array()).trim());
+        if (fixMessage.getStatus() == "8") {
+            brokerInstruments.AddInstrument(fixMessage.getOrderQuantity(), fixMessage.getPrice(), fixMessage.getSymbol());
+        }
+        System.out.println("System response "+ new String(buffer.array()).trim());
     }
 
     public void sendMessage(AsynchronousSocketChannel client) {
