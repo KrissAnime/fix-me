@@ -88,6 +88,7 @@ public class Broker {
                     System.exit(1);
                 }
             }
+            System.out.println("Broker message => "+ messages[i]);
             buffer.clear();
             readMessage(client);
             Sleep(4);
