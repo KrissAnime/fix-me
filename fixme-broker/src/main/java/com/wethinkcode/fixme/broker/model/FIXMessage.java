@@ -150,7 +150,7 @@ public class FIXMessage {
                     Price = Float.parseFloat(splitTags[1]);
                     break;
                 case "38":
-                    OrderQuantity = Float.parseFloat(splitTags[1]);
+                    OrderQuantity = Integer.parseInt(splitTags[1]);
                     break;
                 case "54":
                     Side = splitTags[1];

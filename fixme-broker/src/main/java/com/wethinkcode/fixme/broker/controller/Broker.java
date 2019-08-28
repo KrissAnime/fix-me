@@ -60,7 +60,13 @@ public class Broker {
     public void readMessage(AsynchronousSocketChannel client) {
         Future result = client.read(buffer);
         if (!result.isDone()) {
-            Thread.sleep(250);
+            try {
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                System.out.println("Sleep");
+                // e.printStackTrace();
+                System.exit(1);
+            }
         }
         FIXMessage fixMessage = new FIXMessage(new String(buffer.array()).trim());
         if (fixMessage.getStatus() == "8") {
@@ -71,7 +77,7 @@ public class Broker {
 
     public void sendMessage(AsynchronousSocketChannel client) {
         String fixMessage = null;
-        String [] messages = new String [] {"50="+idAddress+"|MARKET=jse|54=2|55=zar|44=201.75|38=0.8", "50="+idAddress+"|35=D|MARKET=jse|54=2|55=usd|44=11.75|38=2.4"};
+        String [] messages = new String [] {"50="+idAddress+"|MARKET=jse|54=2|55=zar|44=1.8|38=2", "50="+idAddress+"|35=D|MARKET=jse|54=2|55=usd|44=11.3|38=2"};
         for (int i = 0; i < messages.length; i++) {
 //            fixMessage = new FIXMessage(messages[i]).MarshallMessage();
 //            byte [] message = fixMessage.getBytes();
