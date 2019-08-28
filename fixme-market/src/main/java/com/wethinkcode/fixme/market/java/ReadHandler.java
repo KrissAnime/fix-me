@@ -24,8 +24,10 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
             } else {
                 System.out.println("message : "+ message);
                 ////////
-                String Bmsg = "|50=00001|MARKET=jse|55=ZAR|38=2|44=1.9|54=1|10=066";
-                brokerMessage(message);
+//                String Bmsg = "|50=99999|MARKET=jse|55=ZAR|38=2|44=1.9|54=1|10=066";
+                if (brokerMessage(message) == 1){
+                    String Bmsg = "|50=99999|56=00001|39=2|10=066";
+                }
 
 
                 attachment.byteBuffer.clear();
@@ -65,9 +67,28 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
         return -1;
     }
 
-    public void brokerMessage(String Bmsg){
+    public int brokerMessage(String Bmsg){
         MarketMessageHandler msg = new MarketMessageHandler(Bmsg);
+        return msg.getStatus();
     }
 }
 
+//        String Bmsg = "|50=00001|39=2|44=0.5|54=1|10=066";
 
+//        Message structure:
+
+//        Instrument => 55 = ? (String)
+//        Quantity => 38 = ? (Int)
+//        Market => MARKET = ? (String)
+//        Price => 44 = ? (Float)
+
+//        56 => Destination ID
+//        50 => Sender ID
+//        39 => Execution Status (Executed = 2 / Rejected = 8 )
+//        55 => Instrument (Symbol)
+//        54 => Side (Buy = 1 / Sell = 2)
+
+//        Market Response => |56=?|50=?|39=?|10=checksum|
+//        Broker Message => |50=?|MARKET=?|55=?|38=?|44=?|54=?|10=checksum| (edited)
+
+//        |50=?|MARKET=?|55=?|38=?|44=?|54=?|10=066
