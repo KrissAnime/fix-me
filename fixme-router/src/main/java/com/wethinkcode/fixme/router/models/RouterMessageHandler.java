@@ -8,17 +8,17 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-public class MessageHandler implements Runnable {
+public class RouterMessageHandler implements Runnable {
     private @Setter int brokerID = 0;
     private @Setter final AsynchronousSocketChannel channel;
     ByteBuffer buffer = ByteBuffer.allocate(2048);
-//    private @Setter MessageHandler next = null;
+//    private @Setter RouterMessageHandler next = null;
     String message;
     boolean firstConnection;
-    private @Getter Integer messageDestination;
+    private @Setter @Getter Integer messageDestination;
 
 
-    public MessageHandler(AsynchronousSocketChannel channel, int brokerID) throws InterruptedException {
+    public RouterMessageHandler(AsynchronousSocketChannel channel, int brokerID) throws InterruptedException {
         this.channel = channel;
         this.brokerID = brokerID;
     }
@@ -43,7 +43,9 @@ public class MessageHandler implements Runnable {
 
         firstConnection = true;
         channel.write(ByteBuffer.wrap(String.valueOf(brokerID).getBytes()));
-//        Sleep(3);
+        message = "|50=00001|56=100000|MARKET=jse|55=ZAR|38=1|44=1.9|54=1|10=066";
+
+        //        Sleep(3);
     }
 
     public void readMessage() throws InterruptedException {
@@ -62,7 +64,10 @@ public class MessageHandler implements Runnable {
 
         if (message.isEmpty()) {
             sendNewID();
+            Thread.sleep(9000);
+//            message = "|50=00001|56=100000|MARKET=jse|55=ZAR|38=1|44=1.9|54=1|10=066";
         } else {
+//            message = new String(buffer.array()).trim();
             firstConnection = false;
         }
     }
@@ -92,7 +97,7 @@ public class MessageHandler implements Runnable {
 
 //    private void createNextBroker(AsynchronousSocketChannel broker) throws InterruptedException {
 //        System.out.println("Creating next broker");
-//        setNext(new MessageHandler(broker, ++brokerID));
+//        setNext(new RouterMessageHandler(broker, ++brokerID));
 ////        FIXMessage fixMessage = new FIXMessage();
 ////        fixMessage.setDestinationID(brokerID);
 //    }

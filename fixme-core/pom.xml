@@ -10,7 +10,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>fixme-core</artifactId>
-
+    <groupId>wethinkcode-team3</groupId>
+    <version>1.0-SNAPSHOT</version>
     <dependencies>
 
 

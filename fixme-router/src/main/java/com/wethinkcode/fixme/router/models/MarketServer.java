@@ -2,7 +2,6 @@ package com.wethinkcode.fixme.router.models;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
@@ -10,13 +9,10 @@ import java.nio.channels.CompletionHandler;
 import java.util.Hashtable;
 import java.util.concurrent.TimeUnit;
 
- /*** OLD VERSION OF SERVER ***/
-
  public class MarketServer implements Runnable {
      AsynchronousChannelGroup group;
      Hashtable<Integer, AsynchronousSocketChannel> routingTable;
-     static int brokerID = 0;
-
+     static int brokerID = 999999;
 
      public MarketServer(AsynchronousChannelGroup group, Hashtable<Integer, AsynchronousSocketChannel> routingTable) {
          this.group = group;
@@ -33,17 +29,23 @@ import java.util.concurrent.TimeUnit;
                  public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {
                      try {
                          System.out.println("We have a new market client\tRemote: " + clientSocket.getRemoteAddress() + "\tLocal: " + clientSocket.getLocalAddress() + "\tclient: " + clientSocket);
-                         MessageHandler broker = new MessageHandler(clientSocket, brokerID);
+                         RouterMessageHandler market = new RouterMessageHandler(clientSocket, brokerID);
 
-                         new Thread(broker).start();
+                         new Thread(market).start();
 
-
-                         //                         broker.readMessage();
                          if (!routingTable.contains(clientSocket)) {
                              System.out.println("Adding market to routing table");
-                             routingTable.put(brokerID, clientSocket);
-//
+                             market.sendNewID();
+                             routingTable.put(0, clientSocket);
                          }
+                         System.out.println("message " + market.message);
+                         TimeUnit.SECONDS.sleep(3);
+                         /**]
+                          * MARKET = 0
+                          * BROKER = 100000
+                          */
+//                         market.sendMessage(routingTable.get(0));
+
 
                      } catch (Exception e) {
                          e.printStackTrace();
@@ -65,30 +67,6 @@ import java.util.concurrent.TimeUnit;
          } catch (InterruptedException e) {
              System.out.println("Broker server was interrupted");
              e.printStackTrace();
-         }/* catch (ExecutionException e) {
-            e.printStackTrace();
-        }*/
-
-
-
-     }
-
-     private static ByteBuffer ClearBuffer(ByteBuffer buffer) {
-//        System.out.println("Before clear buffer" + new String(buffer.array()).trim());
-         buffer.clear();
-         buffer = ByteBuffer.allocate(2048);
-         buffer.clear();
-         buffer.put(new byte[2048]);
-         buffer.clear();
-//        System.out.println("After clear buffer" + new String(buffer.array()).trim());
-         return buffer;
-     }
-
-     private static int setBrokerID() {
-         return ++brokerID;
-     }
-
-     private static void Sleep(long seconds) throws InterruptedException {
-         TimeUnit.SECONDS.sleep(seconds);
+         }
      }
  }

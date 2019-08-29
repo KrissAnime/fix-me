@@ -28,7 +28,7 @@ public class BrokerServer implements Runnable {
                 public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {
                     try {
                         System.out.println("We have a new client\tRemote: " + clientSocket.getRemoteAddress() + "\tLocal: " + clientSocket.getLocalAddress() + "\tclient: " + clientSocket);
-                        MessageHandler broker = new MessageHandler(clientSocket, ++brokerID);
+                        RouterMessageHandler broker = new RouterMessageHandler(clientSocket, ++brokerID);
 
                         new Thread(broker).start();
 
