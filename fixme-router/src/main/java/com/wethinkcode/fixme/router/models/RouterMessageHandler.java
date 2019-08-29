@@ -26,6 +26,7 @@ public class RouterMessageHandler implements Runnable {
     @Override
     public void run() {
         try {
+            readMessage();
 //            sendNewID();
 //            buffer.clear();
 //            readMessage();
@@ -63,10 +64,12 @@ public class RouterMessageHandler implements Runnable {
         message = new String(buffer.array()).trim();
 
         if (message.isEmpty()) {
-            sendNewID();
-            Thread.sleep(9000);
+            firstConnection = true;
+//            sendNewID();
+//            Thread.sleep(9000);
 //            message = "|50=00001|56=100000|MARKET=jse|55=ZAR|38=1|44=1.9|54=1|10=066";
         } else {
+            messageDestination = Integer.parseInt(message.split("\\|")[0].split("=")[1]);
 //            message = new String(buffer.array()).trim();
             firstConnection = false;
         }

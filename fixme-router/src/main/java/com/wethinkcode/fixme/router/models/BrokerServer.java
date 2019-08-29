@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 public class BrokerServer implements Runnable {
     AsynchronousChannelGroup group;
     Hashtable<Integer, AsynchronousSocketChannel> routingTable;
-    static int brokerID = 99999;
+    static int brokerID = 100000;
 
 
     public BrokerServer(AsynchronousChannelGroup group, Hashtable<Integer, AsynchronousSocketChannel> routingTable) {
@@ -28,18 +28,27 @@ public class BrokerServer implements Runnable {
                 public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {
                     try {
                         System.out.println("We have a new client\tRemote: " + clientSocket.getRemoteAddress() + "\tLocal: " + clientSocket.getLocalAddress() + "\tclient: " + clientSocket);
-                        RouterMessageHandler broker = new RouterMessageHandler(clientSocket, ++brokerID);
+                        RouterMessageHandler messageHandler = new RouterMessageHandler(clientSocket, brokerID);
 
-                        new Thread(broker).start();
+                        new Thread(messageHandler).start();
 
-                        if (routingTable.contains(clientSocket)) {
-                            System.out.println("Client already exists");
-                            broker.sendMessage(routingTable.get(0));
-                        } else {
+                        if (messageHandler.firstConnection) {
+                            System.out.println("Sending broker ID " + brokerID);
+                            messageHandler.sendNewID();
                             routingTable.put(brokerID, clientSocket);
-                            broker.sendNewID();
-                            System.out.println("New client added");
+                            brokerID++;
+                        } else {
+                            System.out.println("Sending message from broker to market");
+                            messageHandler.sendMessage(routingTable.get(0));
                         }
+//                        if (routingTable.contains(clientSocket)) {
+//                            System.out.println("Client already exists");
+//                            broker.sendMessage(routingTable.get(0));
+//                        } else {
+//                            routingTable.put(brokerID, clientSocket);
+//                            broker.sendNewID();
+//                            System.out.println("New client added");
+//                        }
 //                        broker.readMessage();
 //                        if (!broker.firstConnection) {
 //                            if (routingTable.contains(0)) {
