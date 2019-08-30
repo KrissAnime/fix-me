@@ -1,5 +1,6 @@
 package com.wethinkcode.fixme.market.java;
 
+import java.nio.ByteBuffer;
 import java.nio.channels.CompletionHandler;
 import java.nio.charset.Charset;
 
@@ -25,7 +26,8 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
                 System.out.println("message : "+ message);
                 ////////
 //                String Bmsg = "|50=99999|MARKET=jse|55=ZAR|38=2|44=1.9|54=1|10=066";
-                if (brokerMessage(message) == 1){
+                Reply reply = new Reply();
+                if (brokerMessage(message, attachment, reply) == 1){
                     String Bmsg = "|50=99999|56=00001|39=2|10=066";
                 }
 
@@ -67,9 +69,12 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
         return -1;
     }
 
-    public int brokerMessage(String Bmsg){
-        MarketMessageHandler msg = new MarketMessageHandler(Bmsg);
+    public int brokerMessage(String Bmsg, ChannelDetails attachment, Reply reply){
+        MarketMessageHandler msg = new MarketMessageHandler(Bmsg, attachment, reply);
+        System.out.println(reply.getMessage());
+        attachment.socketChannel.write(ByteBuffer.wrap(reply.getMessage().getBytes()));
         return msg.getStatus();
+
     }
 }
 

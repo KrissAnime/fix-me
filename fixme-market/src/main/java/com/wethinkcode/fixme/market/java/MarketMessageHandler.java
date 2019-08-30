@@ -8,11 +8,14 @@ public class MarketMessageHandler {
     int checksum;
     int action;
     String market;
-    private int status;
     private Instruments item;
+    Reply reply;
 
-    public MarketMessageHandler(String msg){
 
+
+    public MarketMessageHandler(String msg, ChannelDetails attachment, Reply reply){
+
+        this.reply = reply;
         String[] MsgSections= msg.split("\\|");
         for (String keyValue: MsgSections) {
             String[] MsgSection = keyValue.split("=");
@@ -60,10 +63,6 @@ public class MarketMessageHandler {
         System.out.println(Storage.getInstance().getZAR().count());
     }
 
-    public int getStatus() {
-        return status;
-    }
-
     public int instrumentCheck(){
         if (this.instrument.equals("ZAR"))
             this.item = Storage.getInstance().getZAR();
@@ -74,14 +73,19 @@ public class MarketMessageHandler {
         if (this.qty <= this.item.count() && this.price == this.item.price()){
             this.item.sub(this.qty);
             System.out.println("SUCCESS");
-            this.status = 1;
+
+
         } else {
             System.out.println("FAILURE");
-            this.status = 0;
         }
 
         return 0;
 
+    }
+
+    public int getStatus() {
+        //todo
+        return 1;
     }
 }
 //    String Bmsg = "|50=00001|MARKET=jse|55=ZAR|38=2|44=0.5|54=1|10=066";
