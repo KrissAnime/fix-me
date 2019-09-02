@@ -46,14 +46,20 @@ public class Broker {
 
     public static void getBrokerId(AsynchronousSocketChannel client) {
         Future result = client.read(buffer);
-        if (result.isDone()) {
-            if (!connected) {
-                System.out.println("... ");
-                idAddress = new String(buffer.array()).trim();
-                System.out.println("Broker id = "+ idAddress);
-                connected = true;
-                Sleep(10);
+        while (!result.isDone()) {
+            try {
+               // System.out.println("waiting for id.... = ");
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                System.exit(1);
             }
+        }
+        if (!connected) {
+            System.out.println("... ");
+            idAddress = new String(buffer.array()).trim();
+            System.out.println("Broker id = "+ idAddress);
+            connected = true;
+            Sleep(10);
         }
     }
     public void readMessage(AsynchronousSocketChannel client) {
