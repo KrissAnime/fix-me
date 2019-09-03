@@ -31,10 +31,11 @@ public class BrokerServer implements Runnable {
                         RouterMessageHandler messageHandler = new RouterMessageHandler(clientSocket, brokerID);
 
                         new Thread(messageHandler).start();
+                        Thread.currentThread().join();
 
                         if (messageHandler.firstConnection) {
                             System.out.println("Sending broker ID " + brokerID);
-                            messageHandler.sendNewID();
+//                            messageHandler.sendNewID();
                             routingTable.put(brokerID, clientSocket);
                             brokerID++;
                         } else {

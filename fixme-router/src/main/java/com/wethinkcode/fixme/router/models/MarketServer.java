@@ -33,11 +33,12 @@ import java.util.concurrent.TimeUnit;
                          RouterMessageHandler messageHandler = new RouterMessageHandler(clientSocket, marketID);
 
                          new Thread(messageHandler).start();
+                         Thread.currentThread().join();
 
                          if (messageHandler.firstConnection) {
                              System.out.println("Sending market ID " + marketID);
-                             messageHandler.sendNewID();
-                             routingTable.put(marketConnectionID, clientSocket);
+//                             messageHandler.sendNewID();
+                             routingTable.put(0, clientSocket);
                              marketID--;
                              marketConnectionID++;
                          } else {

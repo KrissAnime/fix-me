@@ -26,8 +26,9 @@ public class Broker {
             this.brokerInstruments = new BrokerInstruments();
             AsynchronousSocketChannel client = AsynchronousSocketChannel.open();
             client.connect(new InetSocketAddress("localhost", 5000)).get(5, TimeUnit.SECONDS);
+            writeMessage(client, "New Connection");
             getBrokerId(client);
-            sendMessage(client);
+            startTransactions(client);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -36,7 +37,7 @@ public class Broker {
             e.printStackTrace();
         } catch (ExecutionException e) {
             System.out.println("No connection made, no router");
-           // e.printStackTrace();
+            // e.printStackTrace();
             System.exit(1);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -46,14 +47,20 @@ public class Broker {
 
     public static void getBrokerId(AsynchronousSocketChannel client) {
         Future result = client.read(buffer);
-        if (result.isDone()) {
-            if (!connected) {
-                System.out.println("... ");
-                idAddress = new String(buffer.array()).trim();
-                System.out.println("Broker id = "+ idAddress);
-                connected = true;
-                Sleep(10);
+        while (!result.isDone()) {
+            try {
+                System.out.println("waiting for id.... = ");
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                System.exit(1);
             }
+        }
+        if (!connected) {
+            System.out.println("... ");
+            idAddress = new String(buffer.array()).trim();
+            System.out.println("Broker id = "+ idAddress);
+            connected = true;
+            Sleep(10);
         }
     }
     public void readMessage(AsynchronousSocketChannel client) {
@@ -73,26 +80,30 @@ public class Broker {
         System.out.println("Market response "+ new String(buffer.array()).trim());
     }
 
-    public void sendMessage(AsynchronousSocketChannel client) {
+    public void startTransactions(AsynchronousSocketChannel client) {
         FIXMessage check = null;
         String [] messages = new String [] {"50="+idAddress+"|MARKET=jse|54=2|55=zar|44=1.8|38=2", "50="+idAddress+"|35=D|MARKET=jse|54=2|55=usd|44=11.3|38=2"};
         for (int i = 0; i < messages.length; i++) {
             check = new FIXMessage(messages[i]);
-            ByteBuffer buffer = ByteBuffer.wrap(check.MarshallMessage().getBytes());
-            Future result = client.write(buffer);
-            while (!result.isDone()) {
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    System.out.println("Error waiting for write");
-                    System.exit(1);
-                }
-            }
-            System.out.println("Broker message => "+ messages[i]);
-            buffer.clear();
+            writeMessage(client, check.MarshallMessage());
             readMessage(client);
             Sleep(4);
         }
+    }
+
+    public void writeMessage(AsynchronousSocketChannel client, String message) {
+        ByteBuffer buffer = ByteBuffer.wrap(message.getBytes());
+        Future result = client.write(buffer);
+        while (!result.isDone()) {
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                System.out.println("Error waiting for write");
+                System.exit(1);
+            }
+        }
+        System.out.println("Broker message => "+ message);
+        buffer.clear();
     }
 
     private static void Sleep(long time) {

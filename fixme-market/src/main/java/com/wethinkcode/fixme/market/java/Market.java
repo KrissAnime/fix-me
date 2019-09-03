@@ -46,6 +46,10 @@ public class Market {
         this.channelDetails.readStatus = 1;
         this.channelDetails.mainThread = Thread.currentThread();
         this.channelDetails.byteBuffer = ByteBuffer.allocate(2048);
+
+        channel.write(ByteBuffer.wrap("New Connection".getBytes()));
+        System.out.println("Message sent");
+
         ReadHandler readHandler = new ReadHandler();
         channel.read(this.channelDetails.byteBuffer, channelDetails, readHandler);
 

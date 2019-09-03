@@ -43,6 +43,7 @@ public class RouterMessageHandler implements Runnable {
     void sendNewID() {
 
         firstConnection = true;
+        System.out.println("Broker ID " + brokerID);
         channel.write(ByteBuffer.wrap(String.valueOf(brokerID).getBytes()));
         message = "|50=00001|56=100000|MARKET=jse|55=ZAR|38=1|44=1.9|54=1|10=066";
 
@@ -62,12 +63,13 @@ public class RouterMessageHandler implements Runnable {
         }
 
         message = new String(buffer.array()).trim();
+        System.out.println("Message " + message);
 
-        if (message.isEmpty()) {
+        if (message.equals("New Connection")) {
             firstConnection = true;
-//            sendNewID();
+            sendNewID();
 //            Thread.sleep(9000);
-//            message = "|50=00001|56=100000|MARKET=jse|55=ZAR|38=1|44=1.9|54=1|10=066";
+            message = "|50=00001|56=100000|MARKET=jse|55=ZAR|38=1|44=1.9|54=1|10=066";
         } else {
             messageDestination = Integer.parseInt(message.split("\\|")[0].split("=")[1]);
 //            message = new String(buffer.array()).trim();

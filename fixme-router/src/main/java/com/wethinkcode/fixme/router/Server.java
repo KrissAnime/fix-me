@@ -11,7 +11,6 @@ import java.util.concurrent.*;
 
 public class Server {
     static int brokerID = 99999;
-    final int routerID = 984312;
 
     /**
      * Hashmap is not thread safe whereas hashtable is synchronized
