@@ -2,7 +2,7 @@ package com.wethinkcode.fixme.broker;
 
 import com.wethinkcode.fixme.broker.controller.Broker;
 
-import java.net.ConnectException;
+
 
 public class BrokerClient {
 
