@@ -30,8 +30,9 @@ public class BrokerServer implements Runnable {
                         System.out.println("We have a new client\tRemote: " + clientSocket.getRemoteAddress() + "\tLocal: " + clientSocket.getLocalAddress() + "\tclient: " + clientSocket);
                         RouterMessageHandler messageHandler = new RouterMessageHandler(clientSocket, brokerID);
 
-                        new Thread(messageHandler).start();
-                        Thread.currentThread().join();
+                        messageHandler.readMessage();
+//                        new Thread(messageHandler).start();
+//                        Thread.currentThread().join();
 
                         if (messageHandler.firstConnection) {
                             System.out.println("Sending broker ID " + brokerID);
@@ -42,26 +43,6 @@ public class BrokerServer implements Runnable {
                             System.out.println("Sending message from broker to market");
                             messageHandler.sendMessage(routingTable.get(0));
                         }
-//                        if (routingTable.contains(clientSocket)) {
-//                            System.out.println("Client already exists");
-//                            broker.sendMessage(routingTable.get(0));
-//                        } else {
-//                            routingTable.put(brokerID, clientSocket);
-//                            broker.sendNewID();
-//                            System.out.println("New client added");
-//                        }
-//                        broker.readMessage();
-//                        if (!broker.firstConnection) {
-//                            if (routingTable.contains(0)) {
-//                                System.out.println("Market not in routing table");
-//                            } else {
-//                                System.out.println("Sending market a message");
-//                                broker.sendMessage(routingTable.get(0));
-//                            }
-//                        } else {
-//                            System.out.println("Adding broker to routing table");
-//                            routingTable.put(brokerID, clientSocket);
-//                        }
 
                     } catch (Exception e) {
                         e.printStackTrace();

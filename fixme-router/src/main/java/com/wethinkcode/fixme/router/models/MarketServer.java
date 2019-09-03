@@ -32,8 +32,10 @@ import java.util.concurrent.TimeUnit;
                          System.out.println("We have a new market client\tRemote: " + clientSocket.getRemoteAddress() + "\tLocal: " + clientSocket.getLocalAddress() + "\tclient: " + clientSocket);
                          RouterMessageHandler messageHandler = new RouterMessageHandler(clientSocket, marketID);
 
-                         new Thread(messageHandler).start();
-                         Thread.currentThread().join();
+                         messageHandler.readMessage();
+
+//                         new Thread(messageHandler).start();
+//                         Thread.currentThread().join();
 
                          if (messageHandler.firstConnection) {
                              System.out.println("Sending market ID " + marketID);
@@ -41,27 +43,11 @@ import java.util.concurrent.TimeUnit;
                              routingTable.put(0, clientSocket);
                              marketID--;
                              marketConnectionID++;
+                             messageHandler.sendMessage(clientSocket);
                          } else {
                              System.out.println("Sending message from market to broker with ID " + messageHandler.getMessageDestination());
                              messageHandler.sendMessage(routingTable.get(messageHandler.getMessageDestination()));
                          }
-
-//                         if (!routingTable.contains(clientSocket)) {
-//                             System.out.println("Adding market to routing table");
-//                             messageHandler.sendNewID();
-//                             routingTable.put(0, clientSocket);
-//                         } else {
-//                             messageHandler.readMessage();
-//                             messageHandler.sendMessage(routingTable.get(messageHandler.getMessageDestination()));
-//                         }
-//                         System.out.println("message " + messageHandler.message);
-//                         TimeUnit.SECONDS.sleep(3);
-                         /**]
-                          * MARKET = 0 (SINGLE MARKET LOCATION)
-                          * BROKER = 100000
-                          */
-//                         market.sendMessage(routingTable.get(0));
-
 
                      } catch (Exception e) {
                          e.printStackTrace();
