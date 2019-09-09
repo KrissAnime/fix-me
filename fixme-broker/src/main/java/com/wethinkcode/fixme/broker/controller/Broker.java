@@ -82,7 +82,7 @@ public class Broker {
 
     public void startTransactions(AsynchronousSocketChannel client) {
         FIXMessage check = null;
-        String [] messages = new String [] {"50="+idAddress+"|MARKET=jse|54=2|55=ZAR|44=1.8|38=2", "50="+idAddress+"|35=D|MARKET=jse|54=2|55=USD|44=11.3|38=2"};
+        String [] messages = new String [] {"50="+idAddress+"|MARKET=jse|54=2|55=ZAR|44=1.8|38=2", "50="+idAddress+"|MARKET=jse|54=2|55=USD|44=11.3|38=2"};
         for (int i = 0; i < messages.length; i++) {
             check = new FIXMessage(messages[i]);
             writeMessage(client, messages[i] + "|10=" +check.ConstructCheckSum(messages[i]));

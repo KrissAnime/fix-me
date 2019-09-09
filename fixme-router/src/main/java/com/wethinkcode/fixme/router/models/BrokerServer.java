@@ -1,6 +1,5 @@
 package com.wethinkcode.fixme.router.models;
 
-import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -51,7 +50,6 @@ public class BrokerServer implements Runnable {
                         System.out.println("We have a new client\tRemote: " + clientSocket.getRemoteAddress() + "\tLocal: " + clientSocket.getLocalAddress() + "\tclient: " + clientSocket);
 
                         routingTable.put(brokerID, clientSocket);
-                        brokerID++;
                         RouterMessageHandler messageHandler = new RouterMessageHandler(clientSocket, brokerID, routingTable);
 
                         new Thread(messageHandler).start();
@@ -76,6 +74,7 @@ public class BrokerServer implements Runnable {
                         e.printStackTrace();
                     }
 
+                    brokerID++;
                     brokerserver.accept(null, this);
 
 //                    brokerserver.

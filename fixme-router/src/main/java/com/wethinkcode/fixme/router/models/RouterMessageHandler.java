@@ -30,15 +30,9 @@ public class RouterMessageHandler implements Runnable {
     @Override
     public void run() {
         try {
-            readMessage();
-//            sendNewID();
-//            buffer.clear();
-//            readMessage();
-//            Sleep(2);
-//            sendNewID();
-//            FIXMessage fixMessage = new FIXMessage();
-//            fixMessage.UnMarshallMessage("8=FIX.4.4|9=106|35=A|34=1|52=20170117- 08:03:04.509|98=0|108=30|141=Y|10=066|");
-//            sendMessage(fixMessage);
+            while (true) {
+                readMessage();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -78,14 +72,21 @@ public class RouterMessageHandler implements Runnable {
 //            message = "|50=00001|56=100000|MARKET=jse|55=ZAR|38=1|44=1.9|54=1|10=066";
         } else {
 
+//            String[] MsgSections= msg.split("\\|");
+//            for (String keyValue: MsgSections) {
+//                String[] MsgSection = keyValue.split("=");
+//                if (MsgSection.length == 2){
+//                    System.out.println(MsgSection[0] + " - " + MsgSection[1]);
+//                    switch (MsgSection[0]) {
+
             message = new String(buffer.array()).trim();
             if (message.contains("50=") && message.contains("56=")) {
                 System.out.println("message = " + message);
-                String[] test = message.split("|");
-//                messageDestination = Integer.parseInt(message.split("\\|")[0].split("=")[1]);
-                System.out.println("First split " + test[0]);
-                System.out.println("Second split " + test[1]);
-//                sendMessage(routingTable.get(messageDestination), message);
+                String[] test = message.split("\\|");
+                messageDestination = Integer.parseInt(message.split("\\|")[1].split("=")[1]);
+//                System.out.println("First split " + test[0]);
+//                System.out.println("Second split " + test[1]);
+                sendMessage(routingTable.get(messageDestination), message);
             } else {
                 System.out.println("Sending to market...");
                 sendMessage(routingTable.get(0), message);
