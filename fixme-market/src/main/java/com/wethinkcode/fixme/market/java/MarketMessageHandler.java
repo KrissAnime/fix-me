@@ -16,6 +16,7 @@ public class MarketMessageHandler {
     public MarketMessageHandler(String msg, ChannelDetails attachment, Reply reply){
 
         this.reply = reply;
+
         String[] MsgSections= msg.split("\\|");
         for (String keyValue: MsgSections) {
             String[] MsgSection = keyValue.split("=");
@@ -40,6 +41,7 @@ public class MarketMessageHandler {
                     case "50":
 //                        System.out.println("brokerID " + MsgSection[1]);
                         this.BrokerID = Integer.parseInt(MsgSection[1]);
+                        this.reply.setBrokerId(this.BrokerID);
                         break;
                     case "54":
 //                        System.out.println("action " + MsgSection[1]);
@@ -73,11 +75,13 @@ public class MarketMessageHandler {
         if (this.qty <= this.item.count() && this.price == this.item.price()){
             this.item.sub(this.qty);
             System.out.println("SUCCESS");
-
+            reply.setStatus(2);
 
         } else {
             System.out.println("FAILURE");
+            reply.setStatus(8);
         }
+        reply.setCheckSum(70);
 
         return 0;
 
