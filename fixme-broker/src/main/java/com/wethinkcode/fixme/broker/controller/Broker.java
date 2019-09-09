@@ -92,8 +92,8 @@ public class Broker {
     }
 
     public void writeMessage(AsynchronousSocketChannel client, String message) {
-        ByteBuffer buffer = ByteBuffer.wrap(message.getBytes());
-        Future result = client.write(buffer);
+//        ByteBuffer buffer = ByteBuffer.wrap(message.getBytes());
+        Future result = client.write(ByteBuffer.wrap(message.getBytes()));
         while (!result.isDone()) {
             try {
                 Thread.sleep(200);

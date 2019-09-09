@@ -49,7 +49,7 @@ public class Server {
              * Sidelined code until later use
              */
 //            MessageDispatcher messageDispatcher = new MessageDispatcher();
-            AsynchronousChannelGroup group = AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(3));
+            AsynchronousChannelGroup group = AsynchronousChannelGroup.withThreadPool(Executors.newSingleThreadExecutor());
             MarketServer marketServer = new MarketServer(group, routingTable);
             BrokerServer brokerServer = new BrokerServer(group, routingTable);
 //

@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.Hashtable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -16,11 +17,14 @@ public class RouterMessageHandler implements Runnable {
     String message;
     boolean firstConnection;
     private @Setter @Getter Integer messageDestination;
+    Hashtable<Integer, AsynchronousSocketChannel> routingTable;
 
 
-    public RouterMessageHandler(AsynchronousSocketChannel channel, int brokerID) throws InterruptedException {
+
+    public RouterMessageHandler(AsynchronousSocketChannel channel, int brokerID, Hashtable<Integer, AsynchronousSocketChannel> routingTable) throws InterruptedException {
         this.channel = channel;
         this.brokerID = brokerID;
+        this.routingTable = routingTable;
     }
 
     @Override
@@ -45,7 +49,7 @@ public class RouterMessageHandler implements Runnable {
         firstConnection = true;
 //        System.out.println("Broker ID " + brokerID);
         channel.write(ByteBuffer.wrap(String.valueOf(brokerID).getBytes()));
-        message = "|50=00001|56=100000|MARKET=jse|55=ZAR|38=1|44=1.9|54=1|10=066";
+//        message = "|50=00001|56=100000|MARKET=jse|55=ZAR|38=1|44=1.9|54=1|10=066";
 
         //        Sleep(3);
     }
@@ -69,16 +73,24 @@ public class RouterMessageHandler implements Runnable {
         if (message.equals("New Connection")) {
             firstConnection = true;
             sendNewID();
+            readMessage();
 //            Thread.sleep(9000);
-            message = "|50=00001|56=100000|MARKET=jse|55=ZAR|38=1|44=1.9|54=1|10=066";
+//            message = "|50=00001|56=100000|MARKET=jse|55=ZAR|38=1|44=1.9|54=1|10=066";
         } else {
-            messageDestination = Integer.parseInt(message.split("\\|")[0].split("=")[1]);
-//            message = new String(buffer.array()).trim();
+
+            message = new String(buffer.array()).trim();
+            if (message.contains("50=")) {
+                messageDestination = Integer.parseInt(message.split("\\|")[0].split("=")[1]);
+                sendMessage(routingTable.get(messageDestination), message);
+            } else {
+                System.out.println("Sending to market...");
+                sendMessage(routingTable.get(0), message);
+            }
             firstConnection = false;
         }
     }
 
-    public void sendMessage(AsynchronousSocketChannel destination) throws InterruptedException {
+    public void sendMessage(AsynchronousSocketChannel destination, String message) throws InterruptedException {
         Future<Integer> future = destination.write(ByteBuffer.wrap(message.getBytes()));
         while (!future.isDone()) {
             System.out.println("Waiting for broker message to be sent...");
