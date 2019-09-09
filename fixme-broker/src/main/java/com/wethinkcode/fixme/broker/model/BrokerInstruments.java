@@ -17,12 +17,12 @@ public class BrokerInstruments {
     }
 
     public void AddInstrument(Integer quantity, Float price, String type){
-        if(type == "zar") {
+        if(type == "ZAR") {
             this.zarInstrument = this.zarInstrument + quantity;
             this.zarPrice = price;
         }
 
-        if(type == "usd") {
+        if(type == "USD") {
             this.usdInstrument = this.usdInstrument + quantity;
             this.usdPrice = price;
         }
