@@ -96,7 +96,7 @@ public class FIXMessage {
      public FIXMessage(String marshallMessage){
 
             this.marshallMessage = marshallMessage;
-
+            this.ParseMessage();
     }
 
     //Example fix message which would request authentication from the server
@@ -105,9 +105,7 @@ public class FIXMessage {
     //Example server response to the above FIX message
     //8=FIX.4.4|9=106|35=A|34=1|49=CSERVER|50=TRADE|52=20170117- 08:03:04.509|56=theBroker.12345|57=any_string|98=0|108=30|141=Y|10=066|
 
-    public String MarshallMessage() {
-        return ( ConstructBody() + ConstructTrailer());
-    }
+
 
     private void ParseMessage() {
         String[] splitLine = marshallMessage.split("\\|");
@@ -157,51 +155,6 @@ public class FIXMessage {
 //                    System.out.println("Default found in fix message tag:\t" + splitTags[0] + " message:\t" + splitTags[1]);
             }
         }
-    }
-
-
-
-    //8=FIX.4.4|9=106|35=A|34=1|49=CSERVER|50=TRADE|52=20170117- 08:03:04.509|56=theBroker.12345|57=any_string|98=0|108=30|141=Y|10=066|
-    private String ConstructBody() {
-        StringBuilder body = new StringBuilder();
-        body.append(MessageSequenceNumberTag + "=" + MessageSequenceNumber + "|");
-        if (RoutingCompanyID != 0) {
-            body.append(RoutingCompanyIDTag + "=" + RoutingCompanyID + "|");
-        }
-        if (RoutingSenderID != 0) {
-            body.append(RoutingSenderIDTag + "=" + RoutingSenderID + "|");
-        }
-
-        body.append(SendingTimeTag + "=" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + "|");
-
-        if (RoutingReceiverID != 0) {
-            body.append(RoutingReceiverIDTag + "=" + RoutingReceiverID + "|");
-        }
-
-        if (Status != null) {
-            body.append(StatusTag + "=" + Status + "|");
-        }
-
-        if (Side != null) {
-            body.append(SideTag + "=" + Side + "|");
-        }
-
-        if (Symbol != null) {
-            body.append(SymbolTag + "=" + Symbol + "|");
-        }
-
-        if (OrderTypeMarket != null) {
-            body.append(OrderTypeMarketTag + "=" + OrderTypeMarket + "|");
-        }
-
-        if (OrderQuantity != 0) {
-            body.append(OrderQuantityTag + "=" + OrderQuantity + "|");
-        }
-        if (Price != 0.0) {
-            body.append(PriceTag + "=" + Price + "|");
-        }
-
-        return body.toString();
     }
 
 
