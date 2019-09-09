@@ -62,7 +62,7 @@ public class RouterMessageHandler implements Runnable {
         Future<Integer> future = channel.read(buffer);
 
         while (!future.isDone()) {
-            System.out.println("Waiting for message to be received...");
+//            System.out.println("Waiting for message to be received...");
             Thread.sleep(250);
         }
 
@@ -79,9 +79,13 @@ public class RouterMessageHandler implements Runnable {
         } else {
 
             message = new String(buffer.array()).trim();
-            if (message.contains("50=")) {
-                messageDestination = Integer.parseInt(message.split("\\|")[0].split("=")[1]);
-                sendMessage(routingTable.get(messageDestination), message);
+            if (message.contains("50=") && message.contains("56=")) {
+                System.out.println("message = " + message);
+                String[] test = message.split("|");
+//                messageDestination = Integer.parseInt(message.split("\\|")[0].split("=")[1]);
+                System.out.println("First split " + test[0]);
+                System.out.println("Second split " + test[1]);
+//                sendMessage(routingTable.get(messageDestination), message);
             } else {
                 System.out.println("Sending to market...");
                 sendMessage(routingTable.get(0), message);

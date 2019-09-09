@@ -33,7 +33,9 @@ import java.util.concurrent.TimeUnit;
 
                          if (!routingTable.contains(0)) {
                              routingTable.put(0, clientSocket);
+                             System.out.println("Added market");
                          }
+
                          RouterMessageHandler messageHandler = new RouterMessageHandler(clientSocket, marketID, routingTable);
 
                          new Thread(messageHandler).start();
