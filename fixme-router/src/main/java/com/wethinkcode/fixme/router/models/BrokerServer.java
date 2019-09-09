@@ -3,7 +3,6 @@ package com.wethinkcode.fixme.router.models;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.Hashtable;
 import java.util.concurrent.TimeUnit;
@@ -19,25 +18,6 @@ public class BrokerServer implements Runnable {
         this.routingTable = routingTable;
     }
 
-    private static ByteBuffer ClearBuffer(ByteBuffer buffer) {
-//        System.out.println("Before clear buffer" + new String(buffer.array()).trim());
-        buffer.clear();
-        buffer = ByteBuffer.allocate(2048);
-        buffer.clear();
-        buffer.put(new byte[2048]);
-        buffer.clear();
-//        System.out.println("After clear buffer" + new String(buffer.array()).trim());
-        return buffer;
-    }
-
-    private static int setBrokerID() {
-        return ++brokerID;
-    }
-
-    private static void Sleep(long seconds) throws InterruptedException {
-        TimeUnit.SECONDS.sleep(seconds);
-    }
-
     @Override
     public void run() {
         try {
@@ -47,40 +27,17 @@ public class BrokerServer implements Runnable {
                 @Override
                 public void completed(AsynchronousSocketChannel clientSocket, Void attachment) {
                     try {
-                        System.out.println("We have a new client\tRemote: " + clientSocket.getRemoteAddress() + "\tLocal: " + clientSocket.getLocalAddress() + "\tclient: " + clientSocket);
-
                         routingTable.put(brokerID, clientSocket);
+                        System.out.println("New broker connected " + brokerID);
                         RouterMessageHandler messageHandler = new RouterMessageHandler(clientSocket, brokerID, routingTable);
 
                         new Thread(messageHandler).start();
-
-//                        messageHandler.readMessage();
-//                        new Thread(messageHandler).start();
-//                        Thread.currentThread().join();
-
-//                        if (messageHandler.firstConnection) {
-////                            System.out.println("Sending broker ID " + brokerID);
-//////                            messageHandler.sendNewID();
-//                            routingTable.put(brokerID, clientSocket);
-//                            messageHandler.readMessage();
-//                            brokerID++;
-//                        } else {
-////                            System.out.println("Sending message from broker to market");
-////                            messageHandler.sendMessage(routingTable.get(0));
-//                        }
-
-
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
 
                     brokerID++;
                     brokerserver.accept(null, this);
-
-//                    brokerserver.
-
-//                    System.out.println("Waiting for next message");
-
                 }
 
                 @Override
@@ -101,9 +58,7 @@ public class BrokerServer implements Runnable {
         } catch (InterruptedException e) {
             System.out.println("Broker server was interrupted");
             e.printStackTrace();
-        }/* catch (ExecutionException e) {
-            e.printStackTrace();
-        }*/
+        }
     }
 
 }

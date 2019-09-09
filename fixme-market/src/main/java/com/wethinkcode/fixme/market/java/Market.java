@@ -23,14 +23,12 @@ public class Market {
             RouterConnection("localhost", 5001);
         } catch (IOException e) {
             System.out.println("1");
-            e.printStackTrace();
             System.exit(1);
         } catch (ExecutionException e) {
             System.out.println("connection failed, router down");
             System.exit(1);
         } catch (InterruptedException e) {
             System.out.println("111");
-            e.printStackTrace();
             System.exit(1);
         }
 
@@ -48,7 +46,7 @@ public class Market {
         this.channelDetails.byteBuffer = ByteBuffer.allocate(2048);
 
         channel.write(ByteBuffer.wrap("New Connection".getBytes()));
-        System.out.println("Message sent");
+
 
         ReadHandler readHandler = new ReadHandler();
         channel.read(this.channelDetails.byteBuffer, channelDetails, readHandler);

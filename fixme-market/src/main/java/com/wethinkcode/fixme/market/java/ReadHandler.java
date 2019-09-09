@@ -5,10 +5,11 @@ import java.nio.channels.CompletionHandler;
 import java.nio.charset.Charset;
 
 public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> {
+    public static boolean idTest = false;
 
     @Override
     public void completed(Integer result, ChannelDetails attachment) {
-        System.out.println("buffer === " + result);
+//
         if (result == -1)
         {
             attachment.mainThread.interrupt();
@@ -17,13 +18,14 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
         }
         else if (attachment.readStatus == 1){
             String message = this.getBufferMsg(attachment);
-            System.out.println("message -> " + message);
-            if ((attachment.MarketID = this.setMarketId(attachment, message)) > -1) {
+//            System.out.println("message -> " + message);
+            if ( attachment.MarketID == -1) {
+                attachment.MarketID = this.setMarketId(attachment, message);
                 attachment.readStatus = 0;
                 attachment.socketChannel.read(attachment.byteBuffer, attachment, this);
                 return;
             } else {
-                System.out.println("message : "+ message);
+                System.out.println("recieved message : "+ message);
                 ////////
 //                String Bmsg = "|50=99999|MARKET=jse|55=ZAR|38=2|44=1.9|54=1|10=066";
                 Reply reply = new Reply();
@@ -31,15 +33,13 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
                     String Bmsg = "|50=99999|56=00001|39=2|10=066";
                 }
 
-
+                attachment.MarketID = reply.getMarkerId();
                 attachment.byteBuffer.clear();
                 attachment.readStatus = 1;
                 attachment.socketChannel.read(attachment.byteBuffer, attachment, this);
             }
         } else {
             attachment.byteBuffer.clear();
-
-            System.out.println("go again");
             attachment.readStatus = 1;
             attachment.socketChannel.read(attachment.byteBuffer, attachment, this);
         }
@@ -63,7 +63,7 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
     public int setMarketId(ChannelDetails attachment, String message){
         if (attachment.MarketID == -1){
             int id = Integer.parseInt(message);
-            System.out.println("Server responded with id : " + id);
+            idTest = true;
             return id;
         }
         return -1;
@@ -71,7 +71,7 @@ public class ReadHandler implements CompletionHandler<Integer , ChannelDetails> 
 
     public int brokerMessage(String Bmsg, ChannelDetails attachment, Reply reply){
         MarketMessageHandler msg = new MarketMessageHandler(Bmsg, attachment, reply);
-        System.out.println(reply.getMessage());
+        System.out.println("Replying with : " + reply.getMessage());
         attachment.socketChannel.write(ByteBuffer.wrap(reply.getMessage().getBytes()));
         return msg.getStatus();
 

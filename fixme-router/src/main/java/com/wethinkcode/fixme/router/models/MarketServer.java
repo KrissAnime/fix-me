@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
      AsynchronousChannelGroup group;
      Hashtable<Integer, AsynchronousSocketChannel> routingTable;
      static int marketID = 999999;
-     static int marketConnectionID = 0;
 
      public MarketServer(AsynchronousChannelGroup group, Hashtable<Integer, AsynchronousSocketChannel> routingTable) {
          this.group = group;
@@ -29,34 +28,15 @@ import java.util.concurrent.TimeUnit;
                  @Override
                  public void completed(AsynchronousSocketChannel clientSocket, Object attachment) {
                      try {
-                         System.out.println("We have a new market client\tRemote: " + clientSocket.getRemoteAddress() + "\tLocal: " + clientSocket.getLocalAddress() + "\tclient: " + clientSocket);
 
                          if (!routingTable.contains(0)) {
                              routingTable.put(0, clientSocket);
-                             System.out.println("Added market");
+                             System.out.println("New market connected");
                          }
 
                          RouterMessageHandler messageHandler = new RouterMessageHandler(clientSocket, marketID, routingTable);
 
                          new Thread(messageHandler).start();
-//                         messageHandler.readMessage();
-
-//                         new Thread(messageHandler).start();
-//                         Thread.currentThread().join();
-
-//                         if (messageHandler.firstConnection) {
-////                             System.out.println("Sending market ID " + marketID);
-//////                             messageHandler.sendNewID();
-//                             routingTable.put(0, clientSocket);
-//                             messageHandler.readMessage();
-//                             marketID--;
-//                             marketConnectionID++;
-//                             messageHandler.sendMessage(clientSocket);
-//                         } else {
-//                             System.out.println("Sending message from market to broker with ID " + messageHandler.getMessageDestination());
-//                             messageHandler.sendMessage(routingTable.get(messageHandler.getMessageDestination()));
-//                         }
-
                      } catch (Exception e) {
                          e.printStackTrace();
                      }

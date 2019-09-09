@@ -43,6 +43,6 @@ public class Reply {
         return super.toString();
     }
     public String getMessage(){
-        return "|50="+ this.brokerId +"|56=" + this.markerId + "|39=" + this.status + "|10=" + this.checkSum;
+        return "|50="+ this.markerId +"|56=" + this.brokerId + "|39=" + this.status + "|10=" + this.checkSum;
     }
 }

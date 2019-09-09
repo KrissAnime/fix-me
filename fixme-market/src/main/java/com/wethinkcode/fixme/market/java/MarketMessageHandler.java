@@ -21,7 +21,6 @@ public class MarketMessageHandler {
         for (String keyValue: MsgSections) {
             String[] MsgSection = keyValue.split("=");
             if (MsgSection.length == 2){
-                System.out.println(MsgSection[0] + " - " + MsgSection[1]);
                 switch (MsgSection[0]) {
                     case "55":
 //                        System.out.println("instrument " + MsgSection[1]);
@@ -56,13 +55,10 @@ public class MarketMessageHandler {
             }
         }
 
-        System.out.println(Storage.getInstance().getZAR().count());
 
         instrumentCheck();
-        System.out.println(this.item.count() + " for $" + this.item.price());
         Storage.getInstance().getUSD().sub(3);
-        System.out.println(this.item.count() + " for $" + this.item.price());
-        System.out.println(Storage.getInstance().getZAR().count());
+        reply.setMarkerId(attachment.MarketID);
     }
 
     public int instrumentCheck(){
@@ -74,11 +70,9 @@ public class MarketMessageHandler {
 
         if (this.qty <= this.item.count() && this.price == this.item.price()){
             this.item.sub(this.qty);
-            System.out.println("SUCCESS");
             reply.setStatus(2);
 
         } else {
-            System.out.println("FAILURE");
             reply.setStatus(8);
         }
         reply.setCheckSum(70);
@@ -88,7 +82,6 @@ public class MarketMessageHandler {
     }
 
     public int getStatus() {
-        //todo
         return 1;
     }
 }

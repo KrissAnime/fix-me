@@ -49,25 +49,24 @@ public class Broker {
         Future result = client.read(buffer);
         while (!result.isDone()) {
             try {
-                System.out.println("waiting for id.... = ");
+                //System.out.println("waiting for id.... = ");
                 Thread.sleep(200);
             } catch (InterruptedException e) {
                 System.exit(1);
             }
         }
         if (!connected) {
-            System.out.println("... ");
             idAddress = new String(buffer.array()).trim();
-            System.out.println("Broker id = "+ idAddress);
+//            System.out.println("Broker id = "+ idAddress);
             connected = true;
-            Sleep(10);
+//            Sleep(10);
         }
     }
     public void readMessage(AsynchronousSocketChannel client) {
         Future result = client.read(buffer);
         while (!result.isDone()) {
             try {
-                System.out.println("waiting for response.... = ");
+              //  System.out.println("waiting for response.... = ");
                 Thread.sleep(200);
             } catch (InterruptedException e) {
                 System.exit(1);
@@ -82,7 +81,7 @@ public class Broker {
 
     public void startTransactions(AsynchronousSocketChannel client) {
         FIXMessage check = null;
-        String [] messages = new String [] {"50="+idAddress+"|MARKET=jse|54=2|55=ZAR|44=1.8|38=2", "50="+idAddress+"|MARKET=jse|54=2|55=USD|44=11.3|38=2"};
+        String [] messages = new String [] {"50="+idAddress+"|MARKET=jse|54=2|55=ZAR|44=1.8|38=2", "50="+idAddress+"|MARKET=jse|54=2|55=USD|44=11.3|38=2","Close Channel"};
         for (int i = 0; i < messages.length; i++) {
             check = new FIXMessage(messages[i]);
             writeMessage(client, messages[i] + "|10=" +check.ConstructCheckSum(messages[i]));
@@ -92,7 +91,6 @@ public class Broker {
     }
 
     public void writeMessage(AsynchronousSocketChannel client, String message) {
-//        ByteBuffer buffer = ByteBuffer.wrap(message.getBytes());
         Future result = client.write(ByteBuffer.wrap(message.getBytes()));
         while (!result.isDone()) {
             try {
