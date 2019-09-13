@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Hashtable;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 public class RouterMessageHandler implements Runnable {
     private @Setter int brokerID = 0;
@@ -17,12 +16,17 @@ public class RouterMessageHandler implements Runnable {
     private @Setter @Getter Integer messageDestination;
     Hashtable<Integer, AsynchronousSocketChannel> routingTable;
 
+    private AbstractMessageHandler messageChain;
+
 
 
     public RouterMessageHandler(AsynchronousSocketChannel channel, int brokerID, Hashtable<Integer, AsynchronousSocketChannel> routingTable) throws InterruptedException {
         this.channel = channel;
         this.brokerID = brokerID;
         this.routingTable = routingTable;
+
+        messageChain = new BrokerMessager();
+        messageChain.addNext(new MarketMessager());
     }
 
     @Override
@@ -49,6 +53,9 @@ public class RouterMessageHandler implements Runnable {
         }
 
         message = new String(buffer.array()).trim();
+
+        FIXMessage FixMessage = new FIXMessage(message);
+
         buffer.clear();
         if (message.contains("Close Channel")) {
             System.exit(1);
@@ -56,14 +63,10 @@ public class RouterMessageHandler implements Runnable {
             sendNewID();
             readMessage();
         } else {
-            if (message.contains("50=") && message.contains("56=")) {
-                messageDestination = Integer.parseInt(message.split("\\|")[2].split("=")[1]);
-                System.out.println("Sending to broker... " + message);
-                sendMessage(routingTable.get(messageDestination), message);
-            } else {
-                System.out.println("Sending to market... " + message);
-                sendMessage(routingTable.get(0), message);
-            }
+
+            messageChain.handleMessage(message, routingTable);
+
+
         }
     }
 
@@ -73,4 +76,7 @@ public class RouterMessageHandler implements Runnable {
             Thread.sleep(250);
         }
     }
+
+
+
 }
