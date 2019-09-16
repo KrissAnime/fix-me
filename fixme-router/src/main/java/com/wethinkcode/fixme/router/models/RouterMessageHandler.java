@@ -19,10 +19,12 @@ public class RouterMessageHandler implements Runnable {
 
     private AbstractMessageHandler messageChain;
     boolean connected = true;
+    static int count = 1;
 
 
 
     public RouterMessageHandler(AsynchronousSocketChannel channel, int brokerID, Hashtable<Integer, AsynchronousSocketChannel> routingTable) throws InterruptedException {
+        count = 1;
         this.channel = channel;
         this.brokerID = brokerID;
         this.routingTable = routingTable;
@@ -57,13 +59,9 @@ public class RouterMessageHandler implements Runnable {
 
         FIXMessage FixMessage = new FIXMessage(message);
 
-
         buffer.clear();
         if (message.contains("Close Channel")) {
-            routingTable.remove(channel);
-            channel.close();
-            connected = false;
-            System.out.println("Closed channel connection of channel");
+            DisconnectChannel();
         } else if (message.equals("New Connection")) {
             sendNewID();
             readMessage();
@@ -73,13 +71,25 @@ public class RouterMessageHandler implements Runnable {
                 System.out.println("No valid checksum");
 
             try {
+                if (count == 500000) {
+                    DisconnectChannel();
+                }
                 messageChain.handleMessage(message, routingTable);
+                count++;
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
 
         }
+    }
+
+    private void DisconnectChannel() throws IOException {
+        routingTable.remove(channel);
+        channel.close();
+        connected = false;
+        count = 1;
+        System.out.println("Closed channel connection of channel");
     }
 
 }
