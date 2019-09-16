@@ -13,7 +13,7 @@ public class BrokerMessager extends AbstractMessageHandler {
             sendMessage(routingTable.get(messageDestination), message);
         } else {
 
-            next.handleMessage(message, routingTable);
+            handleNext(message, routingTable);
 //                validateMessage(message);
 //            System.out.println("Sending to market... " + message);
 //                sendMessage(routingTable.get(0), message);

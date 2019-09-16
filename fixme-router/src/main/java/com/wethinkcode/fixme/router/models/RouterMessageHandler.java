@@ -56,6 +56,7 @@ public class RouterMessageHandler implements Runnable {
 
         FIXMessage FixMessage = new FIXMessage(message);
 
+
         buffer.clear();
         if (message.contains("Close Channel")) {
             System.exit(1);
@@ -64,19 +65,17 @@ public class RouterMessageHandler implements Runnable {
             readMessage();
         } else {
 
-            messageChain.handleMessage(message, routingTable);
+            if (!FixMessage.validateChecksum())
+                System.out.println("No valid checksum");
+
+            try {
+                messageChain.handleMessage(message, routingTable);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
 
         }
     }
-
-    public void sendMessage(AsynchronousSocketChannel destination, String message) throws InterruptedException {
-        Future<Integer> future = destination.write(ByteBuffer.wrap(message.getBytes()));
-        while (!future.isDone()) {
-            Thread.sleep(250);
-        }
-    }
-
-
 
 }
