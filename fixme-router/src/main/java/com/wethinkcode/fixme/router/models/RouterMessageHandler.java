@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Hashtable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 public class RouterMessageHandler implements Runnable {
@@ -48,39 +49,41 @@ public class RouterMessageHandler implements Runnable {
         channel.write(ByteBuffer.wrap(String.valueOf(brokerID).getBytes()));
     }
 
-    public void readMessage() throws InterruptedException, IOException {
+    public void readMessage() throws InterruptedException, IOException, ExecutionException {
         Future<Integer> future = channel.read(buffer);
 
         while (!future.isDone()) {
             Thread.sleep(250);
         }
 
-        message = new String(buffer.array()).trim();
+        if (future.get() != -1) {
+            message = new String(buffer.array()).trim();
 
-        FIXMessage FixMessage = new FIXMessage(message);
+            FIXMessage FixMessage = new FIXMessage(message);
 
-        buffer.clear();
-        if (message.contains("Close Channel")) {
-            DisconnectChannel();
-        } else if (message.equals("New Connection")) {
-            sendNewID();
-            readMessage();
-        } else {
-
-            if (!FixMessage.validateChecksum())
-                System.out.println("No valid checksum");
-
-            try {
+            buffer.clear();
+            if (message.contains("Close Channel")) {
+                DisconnectChannel();
+            } else if (message.equals("New Connection")) {
+                sendNewID();
+            } else {
                 if (count == 500000) {
                     DisconnectChannel();
                 }
-                messageChain.handleMessage(message, routingTable);
+                if (!FixMessage.validateChecksum()) {
+                    System.out.println("No valid checksum");
+                } else {
+                    try {
+                        messageChain.handleMessage(message, routingTable);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
                 count++;
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-
-
+        } else {
+            connected = false;
+            System.out.println("A channel was disconnected");
         }
     }
 

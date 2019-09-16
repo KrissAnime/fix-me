@@ -9,8 +9,12 @@ public class BrokerMessager extends AbstractMessageHandler {
     public void handleMessage(String message, Hashtable<Integer, AsynchronousSocketChannel> routingTable) throws Exception{
         if (message.contains("50=") && message.contains("56=")) {
             messageDestination = Integer.parseInt(message.split("\\|")[2].split("=")[1]);
-            System.out.println("Sending to broker... " + message);
-            sendMessage(routingTable.get(messageDestination), message);
+            if (routingTable.get(messageDestination) != null) {
+                if (routingTable.get(messageDestination).isOpen()) {
+                    System.out.println("Sending to broker... " + message);
+                    sendMessage(routingTable.get(messageDestination), message);
+                }
+            }
         } else {
 
             handleNext(message, routingTable);

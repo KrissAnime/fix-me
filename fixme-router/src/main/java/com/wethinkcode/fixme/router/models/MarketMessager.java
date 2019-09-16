@@ -12,7 +12,9 @@ public class MarketMessager extends AbstractMessageHandler {
                 System.out.println("No market connected");
             }
         } else {
-            sendMessage(routingTable.get(0), message);
+            if (routingTable.get(0).isOpen()) {
+                sendMessage(routingTable.get(0), message);
+            }
         }
 
     }

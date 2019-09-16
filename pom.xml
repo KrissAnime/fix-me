@@ -13,7 +13,6 @@
         <module>fixme-router</module>
         <module>fixme-broker</module>
         <module>fixme-market</module>
-        <module>fixme-core</module>
     </modules>
 
     <dependencies>
