@@ -3,13 +3,14 @@ package com.wethinkcode.fixme.router.models;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Hashtable;
 import java.util.concurrent.Future;
 
 public class RouterMessageHandler implements Runnable {
-    private @Setter int brokerID = 0;
+    private @Setter int brokerID;
     private @Setter final AsynchronousSocketChannel channel;
     ByteBuffer buffer = ByteBuffer.allocate(2048);
     String message;
@@ -34,7 +35,6 @@ public class RouterMessageHandler implements Runnable {
         try {
             while (true) {
                 readMessage();
-
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -45,7 +45,7 @@ public class RouterMessageHandler implements Runnable {
         channel.write(ByteBuffer.wrap(String.valueOf(brokerID).getBytes()));
     }
 
-    public void readMessage() throws InterruptedException {
+    public void readMessage() throws InterruptedException, IOException {
         Future<Integer> future = channel.read(buffer);
 
         while (!future.isDone()) {
@@ -59,7 +59,9 @@ public class RouterMessageHandler implements Runnable {
 
         buffer.clear();
         if (message.contains("Close Channel")) {
-            System.exit(1);
+            routingTable.remove(channel);
+            channel.close();
+            System.out.println("Closed channel connection of channel");
         } else if (message.equals("New Connection")) {
             sendNewID();
             readMessage();
