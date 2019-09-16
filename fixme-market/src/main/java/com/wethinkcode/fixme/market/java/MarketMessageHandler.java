@@ -75,7 +75,7 @@ public class MarketMessageHandler {
         } else {
             reply.setStatus(8);
         }
-        reply.setCheckSum(70);
+//        reply.setCheckSum(70);
 
         return 0;
 
@@ -84,6 +84,8 @@ public class MarketMessageHandler {
     public int getStatus() {
         return 1;
     }
+
+
 }
 //    String Bmsg = "|50=00001|MARKET=jse|55=ZAR|38=2|44=0.5|54=1|10=066";
 

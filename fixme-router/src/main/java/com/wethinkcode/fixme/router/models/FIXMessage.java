@@ -106,8 +106,10 @@ public class FIXMessage {
             if (checksum == 0)
                 parseMessage();
             //int checkSum = Integer.parseInt(checksumString[checksumString.length - 1]);
+//            System.out.println("fix message checksum " + checksum);
 
-            if (checksum == sum)
+
+            if (checksum == (sum % 256))
                 return true;
             else
                 return false;

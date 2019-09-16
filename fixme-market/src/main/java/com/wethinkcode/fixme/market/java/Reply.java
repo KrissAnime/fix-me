@@ -43,6 +43,24 @@ public class Reply {
         return super.toString();
     }
     public String getMessage(){
-        return "|50="+ this.markerId +"|56=" + this.brokerId + "|39=" + this.status + "|10=" + this.checkSum;
+        String msg = "|50="+ this.markerId +"|56=" + this.brokerId + "|39=" + this.status;
+        int checksum = getChecksum(msg);
+        return msg + "|10="+checksum;
+    }
+
+    public int getChecksum(String message){
+        System.out.println(message);
+        String chkmessage = message;
+        chkmessage = chkmessage.replace('|', '\u0001');
+
+        int sum = 0;
+        int char_val = 0;
+
+        for (int i = 0; i < chkmessage.length(); i++) {
+            char_val = chkmessage.charAt(i);
+            sum += char_val;
+        }
+        System.out.println(sum % 256);
+        return sum % 256;
     }
 }
