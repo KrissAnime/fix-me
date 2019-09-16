@@ -18,6 +18,7 @@ public class RouterMessageHandler implements Runnable {
     Hashtable<Integer, AsynchronousSocketChannel> routingTable;
 
     private AbstractMessageHandler messageChain;
+    boolean connected = true;
 
 
 
@@ -33,7 +34,7 @@ public class RouterMessageHandler implements Runnable {
     @Override
     public void run() {
         try {
-            while (true) {
+            while (connected) {
                 readMessage();
             }
         } catch (Exception e) {
@@ -61,6 +62,7 @@ public class RouterMessageHandler implements Runnable {
         if (message.contains("Close Channel")) {
             routingTable.remove(channel);
             channel.close();
+            connected = false;
             System.out.println("Closed channel connection of channel");
         } else if (message.equals("New Connection")) {
             sendNewID();

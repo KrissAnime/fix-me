@@ -49,7 +49,6 @@ public class Reply {
     }
 
     public int getChecksum(String message){
-        System.out.println(message);
         String chkmessage = message;
         chkmessage = chkmessage.replace('|', '\u0001');
 
@@ -60,7 +59,6 @@ public class Reply {
             char_val = chkmessage.charAt(i);
             sum += char_val;
         }
-        System.out.println(sum % 256);
         return sum % 256;
     }
 }

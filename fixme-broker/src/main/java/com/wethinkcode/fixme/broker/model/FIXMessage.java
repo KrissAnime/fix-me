@@ -153,7 +153,6 @@ public class FIXMessage {
 
     public String ConstructCheckSum(String message) {
 
-        System.out.println(message);
         String chkmessage = message;
         chkmessage = chkmessage.replace('|', '\u0001');
 
